@@ -112,6 +112,12 @@ function testingFunctions() {
   console.log(this.test);
 }
 
+function closureTest() {
+  return function secondClosure() {
+    console.log('this', this.test)
+  }
+}
+
 const arrowFunctions = () => {
   // arrow function expression
   console.log(this.test);
@@ -177,7 +183,7 @@ export default {
           date: formatDateToDayMonthShortYear(caseSubDetails.value.created_at),
         })
       ),
-      assigneeUpdated: computed(() => t("assignee.updated")),
+      assigneeUpdated: computed(() => t("assignee.updated", this.test)),
       statusUpdated: computed(() => t("statusUpdated")),
     };
   },

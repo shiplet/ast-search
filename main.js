@@ -5,13 +5,14 @@ const { Parser } = require("acorn");
 const { open, writeFile } = require("node:fs/promises");
 
 const NodeType = {
-  ExportDefaultDeclaration: "ExportDefaultDeclaration",
-  ObjectExpression: "ObjectExpression",
   ArrowFunctionExpression: "ArrowFunctionExpression",
+  CallExpression: "CallExpression",
+  ExportDefaultDeclaration: "ExportDefaultDeclaration",
   FunctionDeclaration: "FunctionDeclaration",
   FunctionExpression: "FunctionExpression",
-  VariableDeclarator: "VariableDeclarator",
+  ObjectExpression: "ObjectExpression",
   Property: "Property",
+  VariableDeclarator: "VariableDeclarator",
 };
 
 const y = yargs(process.argv.slice(2))
@@ -38,6 +39,10 @@ const y = yargs(process.argv.slice(2))
     alias: "d",
     describe: "output the setup node",
   })
+  .option('multiple', {
+    alias: "m",
+    describe: "search for multiple instances of function call in same file"
+  })
   .demandOption(
     ["file", "exp"],
     "Please provide values for all three arguments: file, function, and search"
@@ -57,7 +62,7 @@ const y = yargs(process.argv.slice(2))
   })
   .help();
 
-const { f, fn, e, d, p } = y.argv;
+const { f, fn, e, d, p, m } = y.argv;
 
 const fileContents = [];
 let append = false;
@@ -90,16 +95,32 @@ let append = false;
     process.exit(0);
   }
 
-  if (fn) searchFnForExp(ast, fn, e);
+  if (fn) searchFnForExp(ast, fn, e, m);
   if (p) searchPropertyForExp(ast, p, e);
 
-  file.close();
+  await file.close();
 })();
 
-function searchFnForExp(ast, fn, e) {
-  const fnNode = depthFirstSearch(ast, fn, searchForFunctionLike);
-  if (!fnNode) process.exit(0);
-  searchForExp(fnNode, e);
+function searchFnForExp(ast, fn, e, m) {
+  if (m) {
+    const fNodes = depthFirstSearchMultiple(ast, fn, searchForFunctionLike)
+    if (fNodes.length === 0) process.exit(0);
+
+    const fileNames = new Set();
+    for (const fNode of fNodes) {
+      fileNames.add(searchForExpMultiple(fNode, e))
+    }
+
+    for (const fileName of fileNames) {
+      fileName && console.log(fileName)
+    }
+  } else {
+    const fnNode = depthFirstSearch(ast, fn, searchForFunctionLike);
+    if (!fnNode) process.exit(0);
+
+    searchForExp(fnNode, e);
+  }
+
 }
 
 function searchPropertyForExp(ast, prop, e) {
@@ -110,6 +131,10 @@ function searchPropertyForExp(ast, prop, e) {
 
 function searchForExp(node, search) {
   if (breadthFirstSearch(node, search, searchForExpression)) console.log(f);
+}
+
+function searchForExpMultiple(node, search) {
+  if (breadthFirstSearch(node, search, searchForExpression)) return f;
 }
 
 function breadthFirstSearch(ast, search, visitFn) {
@@ -166,6 +191,34 @@ function depthFirstSearch(ast, search, visitFn) {
   return null;
 }
 
+function depthFirstSearchMultiple(ast, search, visitFn) {
+  const dfsStack = [ast];
+  const visitedNodes = new Set();
+  const foundNodes = new Set();
+
+  visitedNodes.add(dfsStack[0]);
+
+  while (dfsStack.length > 0) {
+    const currentNode = dfsStack.pop();
+
+    const expNode = visitFn(currentNode, search);
+
+    if (expNode) {
+      foundNodes.add(expNode)
+    }
+
+    currentNode.edges &&
+    currentNode.edges.forEach((childNode) => {
+      if (!visitedNodes.has(childNode)) {
+        dfsStack.push(childNode);
+        visitedNodes.add(childNode);
+      }
+    });
+  }
+
+  return foundNodes;
+}
+
 function searchForExpression(node, exp) {
   if (node.type && node.type === exp) {
     return node;
@@ -176,12 +229,24 @@ function searchForExpression(node, exp) {
   return null;
 }
 
+function searchForProperty(node, prop) {
+  if (node.type === NodeType.Property && node.key.name === prop) {
+    return node;
+  }
+
+  visit(node);
+
+  return null;
+}
+
 function searchForFunctionLike(node, fn) {
+  // method on an object
   if (node.type === NodeType.Property && node.method && node.key.name === fn) {
     return node;
   }
 
-  if (
+  // named variable assignment with standard or arrow expression
+  else if (
     node.type === NodeType.VariableDeclarator &&
     (node.init.type === NodeType.FunctionExpression ||
       node.init.type === NodeType.ArrowFunctionExpression) &&
@@ -190,7 +255,13 @@ function searchForFunctionLike(node, fn) {
     return node;
   }
 
-  if (node.type === NodeType.FunctionDeclaration && node.id.name === fn) {
+  // named function declaration
+  else if (node.type === NodeType.FunctionDeclaration && node.id.name === fn) {
+    return node;
+  }
+
+  // inline arrow expressions
+  else if (node.type === NodeType.CallExpression && node.callee.name === fn) {
     return node;
   }
 
