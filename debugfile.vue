@@ -328,6 +328,7 @@ export default {
       "clearSpecificWorkspaceUsers",
       "clearCaseDetails",
       "setWorkspaceSwitchWarning",
+        this.checkNames,
     ]),
     handleSelectedKey(assigneeId) {
       this.disableDropdown = true;

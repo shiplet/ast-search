@@ -17,7 +17,7 @@ const NodeType = {
 
 const y = yargs(process.argv.slice(2))
   .scriptName("ast-search")
-  .usage("$0 <file> <function> <search>")
+  .usage("$0 <file> [<function> | <property>] <expression>")
   .option("file", {
     alias: "f",
     describe: "the file to search",
@@ -30,21 +30,43 @@ const y = yargs(process.argv.slice(2))
     alias: "p",
     describe: "the property to search",
   })
-  .option("exp", {
+  .option("expression", {
     alias: "e",
     describe: "the type of expression",
-    choices: ["ThisExpression"],
+    choices: [
+      "ArrayExpression",
+      "ArrowFunctionExpression",
+      "AssignmentExpression",
+      "AwaitExpression",
+      "BinaryExpression",
+      "CallExpression",
+      "ChainExpression",
+      "ConditionalExpression",
+      "FunctionExpression",
+      "ImportExpression",
+      "LogicalExpression",
+      "MemberExpression",
+      "NewExpression",
+      "ObjectExpression",
+      "ParenthesizedExpression",
+      "SequenceExpression",
+      "TaggedTemplateExpression",
+      "ThisExpression",
+      "UnaryExpression",
+      "UpdateExpression",
+      "YieldExpression",
+    ],
+  })
+  .option("multiple", {
+    alias: "m",
+    describe: "search for multiple instances of function call in same file",
   })
   .option("debug", {
     alias: "d",
     describe: "output the setup node",
   })
-  .option('multiple', {
-    alias: "m",
-    describe: "search for multiple instances of function call in same file"
-  })
   .demandOption(
-    ["file", "exp"],
+    ["file", "expression"],
     "Please provide values for all three arguments: file, function, and search"
   )
   .check((argv) => {
@@ -103,16 +125,16 @@ let append = false;
 
 function searchFnForExp(ast, fn, e, m) {
   if (m) {
-    const fNodes = depthFirstSearchMultiple(ast, fn, searchForFunctionLike)
+    const fNodes = depthFirstSearchMultiple(ast, fn, searchForFunctionLike);
     if (fNodes.length === 0) process.exit(0);
 
     const fileNames = new Set();
     for (const fNode of fNodes) {
-      fileNames.add(searchForExpMultiple(fNode, e))
+      fileNames.add(searchForExpMultiple(fNode, e));
     }
 
     for (const fileName of fileNames) {
-      fileName && console.log(fileName)
+      fileName && console.log(fileName);
     }
   } else {
     const fnNode = depthFirstSearch(ast, fn, searchForFunctionLike);
@@ -120,7 +142,6 @@ function searchFnForExp(ast, fn, e, m) {
 
     searchForExp(fnNode, e);
   }
-
 }
 
 function searchPropertyForExp(ast, prop, e) {
@@ -204,16 +225,16 @@ function depthFirstSearchMultiple(ast, search, visitFn) {
     const expNode = visitFn(currentNode, search);
 
     if (expNode) {
-      foundNodes.add(expNode)
+      foundNodes.add(expNode);
     }
 
     currentNode.edges &&
-    currentNode.edges.forEach((childNode) => {
-      if (!visitedNodes.has(childNode)) {
-        dfsStack.push(childNode);
-        visitedNodes.add(childNode);
-      }
-    });
+      currentNode.edges.forEach((childNode) => {
+        if (!visitedNodes.has(childNode)) {
+          dfsStack.push(childNode);
+          visitedNodes.add(childNode);
+        }
+      });
   }
 
   return foundNodes;
