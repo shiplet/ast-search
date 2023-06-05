@@ -269,8 +269,8 @@ function searchForFunctionLike(node, fn) {
   // named variable assignment with standard or arrow expression
   else if (
     node.type === NodeType.VariableDeclarator &&
-    (node.init.type === NodeType.FunctionExpression ||
-      node.init.type === NodeType.ArrowFunctionExpression) &&
+    (node.init?.type === NodeType.FunctionExpression ||
+      node.init?.type === NodeType.ArrowFunctionExpression) &&
     node.id?.name === fn
   ) {
     return node;
