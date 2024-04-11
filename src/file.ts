@@ -1,5 +1,5 @@
 import { FileHandle, open } from "node:fs/promises";
-import { type Node, Parser } from "acorn";
+import { Parser } from "acorn";
 
 export function getAst(contents: string) {
   return Parser.parse(contents, {

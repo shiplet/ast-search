@@ -114,8 +114,8 @@ function testingFunctions() {
 
 function closureTest() {
   return function secondClosure() {
-    console.log('this', this.test)
-  }
+    console.log("this", this.test);
+  };
 }
 
 const arrowFunctions = () => {
@@ -141,7 +141,7 @@ export default {
         location:
           store.state.viewableWorkspaces.find(
             (workspace) =>
-              workspace.id === store.state.casesDetails.app_workspace_id
+              workspace.id === store.state.casesDetails.app_workspace_id,
           )?.name || "",
         created_at: store.state.casesDetails.created_at,
         created_by: store.state.casesDetails.created_by,
@@ -156,8 +156,8 @@ export default {
         en: {
           sideDetailHeader: "Case Details",
           sideAccountsOverviewHeader: "Accounts Overview",
-          caseSubCreatedAt: `Created {date}`,
-          caseSubCreatedBy: `Created by {name}`,
+          caseSubCreatedAt: "Created {date}",
+          caseSubCreatedBy: "Created by {name}",
           sideDetailStatusLabel: "Status",
           sideDetailAssigneeLabel: "Assignee",
           viewAccount: "View Account",
@@ -175,13 +175,13 @@ export default {
       caseSubDetails,
       caseSubCreatedBy: computed(() =>
         t("caseSubCreatedBy", {
-          name: `${caseSubDetails.value?.created_by?.first_name} ${caseSubDetails.value?.created_by?.last_name}`,
-        })
+          name: "test",
+        }),
       ),
       caseSubCreatedAt: computed(() =>
         t("caseSubCreatedAt", {
           date: formatDateToDayMonthShortYear(caseSubDetails.value.created_at),
-        })
+        }),
       ),
       assigneeUpdated: computed(() => t("assignee.updated", this.test)),
       statusUpdated: computed(() => t("statusUpdated")),
@@ -201,7 +201,7 @@ export default {
     const workspaceQuery = this.$route.query?.workspace;
     if (workspaceQuery && workspaceQuery !== getActiveWorkspace().id) {
       const targetWorkspace = this.workspaces.find(
-        (ws) => ws.id === workspaceQuery
+        (ws) => ws.id === workspaceQuery,
       );
       const basePath = "cases";
       if (targetWorkspace) {
@@ -224,7 +224,7 @@ export default {
       this.getMembersAccountDetails(this.casesDetails.account_id).then(
         (res) => {
           this.details = res;
-        }
+        },
       );
       this.loadSpecificWorkspaceUsers({
         workspaceId: this.casesDetails.app_workspace_id,
@@ -242,7 +242,7 @@ export default {
       specificWorkspaceUsers: (state) =>
         state.specificWorkspaceUsers.map((account) => {
           return {
-            name: `${account.first_name} ${account.last_name}`,
+            name: "test",
             id: account.id,
           };
         }),
@@ -278,7 +278,7 @@ export default {
     },
     assigneeId() {
       return this.specificWorkspaceUsers.find(
-        (user) => user.id === this.casesDetails.assignee_id
+        (user) => user.id === this.casesDetails.assignee_id,
       )?.id;
     },
     formattedSubDetails() {
@@ -295,7 +295,7 @@ export default {
         name: this.details.name,
         phone_number: this.details.phone_number
           ? parsePhoneNumber(this.details.phone_number, "US")?.format(
-              "NATIONAL"
+              "NATIONAL",
             )
           : "",
         email_address: this.details.email_address,
@@ -328,7 +328,7 @@ export default {
       "clearSpecificWorkspaceUsers",
       "clearCaseDetails",
       "setWorkspaceSwitchWarning",
-        this.checkNames,
+      this.checkNames,
     ]),
     handleSelectedKey(assigneeId) {
       this.disableDropdown = true;
@@ -341,7 +341,7 @@ export default {
         })
         .catch((error) => {
           this.$message.error(
-            error.response.data.detail || error.response.data.assignee_id
+            error.response.data.detail || error.response.data.assignee_id,
           );
         })
         .finally(() => {

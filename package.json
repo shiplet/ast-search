@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "dev": "npx tsc --watch",
+    "debug": "npx tsc && node ./build/main.js -f ./src/__tests__/dummyFiles/has_setup_this.vue --fn setup -e ThisExpression",
     "test": "jest",
     "build": "cp main.js ast-search"
   },
