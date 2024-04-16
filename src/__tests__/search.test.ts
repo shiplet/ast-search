@@ -88,12 +88,15 @@ describe("search", () => {
 
   test("it finds different kinds of functions", async () => {
     ({ ast, file } = await getAstFromPath(fullVueSFC));
-    const fnFound = searchFnForExp({
-      ast,
-      f: fullVueSFC,
-      fn: "setup",
-      e: NodeType.FunctionExpression,
+    const config = [
+      { f: fullVueSFC, fn: "setup", e: NodeType.FunctionExpression },
+      { f: fullVueSFC, fn: "arrowFunctions", e: NodeType.ThisExpression },
+      { f: fullVueSFC, fn: "closureTest", e: NodeType.ThisExpression },
+    ];
+
+    config.forEach((c) => {
+      const fileFound = searchFnForExp({ ast, ...c });
+      fileFound?.forEach((v) => expect(v).toBe(c.f));
     });
-    fnFound?.forEach((v) => expect(v).toBe(fullVueSFC));
   });
 });
