@@ -102,7 +102,7 @@ const y = yargs(process.argv.slice(2))
 
   if (fn) {
     const found = searchFnForExp({ ast, fn, e, m, f });
-    found?.forEach((v) => console.log("✅", v));
+    found?.forEach((v) => v && console.log("✅", v));
   }
   if (p) {
     searchPropertyForExp({ ast, p, e, f });
