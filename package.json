@@ -5,7 +5,12 @@
   "main": "main.js",
   "scripts": {
     "dev": "npx tsc --watch",
-    "debug": "npx tsc && node ./build/main.js -f ./src/__tests__/dummyFiles/has_setup_this.vue --fn setup -e ThisExpression",
+    "debug:vue": "npx tsc && node ./build/main.js -f src/__tests__/dummyFiles/hasSetupThisOnlyJs.js --root finally -e ThisExpression",
+    "debug:vue:write": "npx tsc && node ./build/main.js -f src/__tests__/dummyFiles/hasSetupThisOnlyJs.js --root setup -e ThisExpression -d",
+    "debug:react": "npx tsc && node ./build/main.js -f src/__tests__/dummyFiles/reactComponent.tsx --root ValidationsTab -e ThisExpression",
+    "debug:empty": "npx tsc && node ./build/main.js -f ./src/__tests__/dummyFiles/empty.ts --root ValidationsTab -e ThisExpression",
+    "debug:basics": "npx tsc && node ./build/main.js -f ./src/__tests__/dummyFiles/jsBasics.js --root yellow -e ThisExpression",
+    "debug:basics:write": "npx tsc && node ./build/main.js -f ./src/__tests__/dummyFiles/jsBasics.js --root ValidationsTab -e ThisExpression -d",
     "test": "jest",
     "build": "cp main.js ast-search"
   },
@@ -13,7 +18,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "acorn": "^8.8.2",
+    "@babel/parser": "^7.24.4",
+    "@babel/types": "^7.24.0",
     "yargs": "^17.7.2"
   },
   "bin": {

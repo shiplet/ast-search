@@ -1,18 +1,18 @@
 import { FileHandle, open } from "node:fs/promises";
-import { Parser } from "acorn";
+import * as parser from "@babel/parser";
+import { File } from "@babel/types";
 
 export function getAst(contents: string) {
-  return Parser.parse(contents, {
-    ecmaVersion: 2022,
+  return parser.parse(contents, {
     sourceType: "module",
+    plugins: ["jsx", "typescript"],
   });
 }
 
-export async function parseVueSFC(file: FileHandle) {
+export async function parseVueSFC(lines: Buffer) {
   const fileContents: string[] = [];
   let append = false;
-  const lines = (await file.readFile()).toString().split("\n");
-  for (const line of lines) {
+  for (const line of lines.toString().split("\n")) {
     if (line === "<script>") {
       append = true;
       continue;
@@ -31,11 +31,28 @@ export async function parseVueSFC(file: FileHandle) {
   return fileContents.join("\n");
 }
 
-export async function getAstFromPath(path: string) {
-  const file = await open(path);
+export async function parseFile(lines: Buffer) {
+  return lines.toString();
+}
 
-  const fileContents = await parseVueSFC(file);
-  const ast = getAst(fileContents);
+interface ParseReturn {
+  ast: File;
+  file: FileHandle;
+}
+
+export async function getAstFromPath(path: string): Promise<ParseReturn> {
+  const file = await open(path);
+  const lines = await file.readFile();
+  let fileContents: string;
+  let ast: parser.ParseResult<any>;
+
+  fileContents = await parseVueSFC(lines);
+  if (fileContents) {
+    ast = getAst(fileContents);
+  } else {
+    fileContents = await parseFile(lines);
+    ast = getAst(fileContents);
+  }
 
   return { ast, file };
 }

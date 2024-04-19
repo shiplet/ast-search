@@ -24,103 +24,59 @@ export const emptyFile = "/emptyFile.js";
 export const EmptyFile: string = ``;
 
 /**
+ * JS Basics
+ */
+export const jsBasics = "/jsBasics.js";
+export const JSBasics: string = `
+const arrowFunction = () => {};
+function standardFunction() {}
+let varFunction = function () {};
+let x = "blue";
+
+const objectExample = {
+  a: "this is a",
+  b: {
+    value: "this is b",
+  },
+  c: function innerPropFunction() {
+    const yellow = {
+      ay: "blue",
+      by: "yellow",
+      cy() {
+        return {
+          dx: {
+            ez: () => {
+              return {
+                b: "test",
+              };
+            },
+          },
+        };
+      },
+    };
+    console.log("this is c");
+    console.log(yellow);
+  },
+  ez: {
+    another: "test",
+  },
+  d() {
+    console.log("this is d");
+  },
+  e: () => {
+    console.log("this is e");
+  },
+  f: arrowFunction,
+  g: standardFunction,
+  h: varFunction,
+};
+`;
+
+/**
  * Jumbo Vue SFC
  */
 export const fullVueSFC = "/fullVueSFC.vue";
-export const FullVueSFC: string = `
-<template>
-  <div class="details-container">
-    <div class="container-left">
-      <SectionCard
-        ><slot name="detailHeader" v-bind:memberName="headerMemberName"
-      /></SectionCard>
-      <SectionCard :sectionCardAdditionalClasses="sectionCardAdditionalClasses"
-        ><slot name="detailBody"
-      /></SectionCard>
-    </div>
-    <div class="container-right">
-      <SectionCard>
-        <h2 class="card-header">{{ t("sideDetailHeader") }}</h2>
-        <div class="case-status-wrapper">
-          <div class="case-status-title">{{ t("sideDetailStatusLabel") }}</div>
-          <a-select
-            size="small"
-            class="case-status-select"
-            :class="statusColor"
-            :disabled="disableDropdown"
-            :dropdownMatchSelectWidth="false"
-            v-model:value="selectedStatus"
-            @change="statusChange"
-          >
-            <a-select-option
-              v-for="(option, idx) in statusOptions"
-              :key="idx"
-              :value="option.value"
-            >
-              {{ option.displayValue }}
-            </a-select-option>
-          </a-select>
-        </div>
-        <div class="case-assignee-wrapper">
-          <div class="case-assignee-title">
-            {{ t("sideDetailAssigneeLabel") }}
-          </div>
-          <DropdownSearchWithIcon
-            size="small"
-            :optionsArr="specificWorkspaceUsers"
-            :placeholderText="t('assignee.placeholder')"
-            :prefilledValue="assigneeId"
-            :loading="disableDropdown"
-            :disabled="disableDropdown"
-            :deSelectEnabled="true"
-            class="assignee-search"
-            @selectedKey="handleSelectedKey"
-          />
-        </div>
-        <a-divider />
-        <ul
-          class="case-sub-details"
-          v-for="(val, key) in formattedSubDetails"
-          :key="key"
-        >
-          <li class="sub-detail" v-if="val">
-            <FontAwesomeIcon
-              :icon="CASE_DETAIL_ICONS[key]"
-              class="sub-detail-icon"
-            /><span class="sub-detail-text">{{ val }}</span>
-          </li>
-        </ul>
-      </SectionCard>
-      <SectionCard>
-        <h2 class="card-header">{{ t("sideAccountsOverviewHeader") }}</h2>
-        <ul
-          class="account-sub-details"
-          v-for="(val, key) in formattedAccountDetails"
-          :key="key"
-        >
-          <li class="sub-detail">
-            <FontAwesomeIcon
-              :icon="CASE_DETAIL_ICONS[key]"
-              class="sub-detail-icon"
-            /><span class="sub-detail-text">{{ val }}</span>
-          </li>
-        </ul>
-        <section class="account-section">
-          <router-link :to="toMembers" class="link" v-if="details.id">
-            <font-awesome-icon
-              icon="fa-solid fa-circle-user"
-              class="view-link"
-            />
-            <span>{{ t("viewAccount") }}</span>
-          </router-link>
-        </section>
-      </SectionCard>
-    </div>
-  </div>
-</template>
-
-<script>
-import { computed } from "vue";
+export const FullVueSFC: string = `import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import ApiService from "@/api/apiService";
 import { mapState, mapGetters, mapActions, mapMutations, useStore } from "vuex";
@@ -217,6 +173,11 @@ export default {
       statusUpdated: computed(() => t("statusUpdated")),
     };
   },
+  test: {
+    item() {
+      console.log(this.test);
+    },
+  },
   data() {
     return {
       details: {},
@@ -273,6 +234,7 @@ export default {
         state.specificWorkspaceUsers.map((account) => {
           return {
             name: "test",
+            wackyItemName: "test",
             id: account.id,
           };
         }),
@@ -396,119 +358,221 @@ export default {
         });
     },
   },
+};`;
+
+/**
+ * Standard React Component
+ */
+export const reactComponent = "/reactComponent.tsx";
+export const ReactComponent = `
+// @ts-nocheck
+import { useState, useMemo } from "react";
+import { useLocation, useParams } from "react-router-dom";
+import { Expectation_ValidationResultFragment } from "src/api/graphql/graphql-operations";
+import { debounce } from "lodash-es";
+import { NotFound } from "src/ui/error/NotFound";
+import { ErrorState } from "src/ui/error";
+import { GroupName } from "src/Expectation/words";
+import { getGroupNameAggregateValidationResults } from "src/DataAssets/AssetDetails/Validations/ValidationResultChartList";
+import { groupValidationResults } from "src/common/utils/groupValidationResult";
+import { useAnchorScroll } from "src/expectationSuites/ExpectationSuiteDetails/useAnchorScroll";
+import {
+  searchColumnNames,
+  getFailedValidationResults,
+  getFilteredSearchedList,
+} from "src/DataAssets/AssetDetails/utils";
+import { ValidationsTabHeader } from "src/DataAssets/AssetDetails/Validations/ValidationsTabHeader";
+import { ValidationsTabFilter } from "src/DataAssets/AssetDetails/Validations/ValidationsTabFilter";
+import { ValidationsTabResults } from "src/DataAssets/AssetDetails/Validations/ValidationsTabResults";
+import { ListAndFilterLayout } from "src/ui/ListAndFilterLayout/ListAndFilterLayout";
+import { EmptyState } from "src/ui/EmptyState";
+import {
+  useAggregateSuite,
+  useColumnNamesData,
+  useDataAsset,
+  useExpectationSuite,
+  useRunHistoriesForValidations,
+  useValidationResult,
+} from "src/DataAssets/AssetDetails/Validations/ValidationHooks";
+import { Grid } from "antd";
+import { ActiveListType } from "src/ui/Button/FailuresToggle";
+
+export const ValidationsTab = () => {
+  const { useBreakpoint } = Grid;
+  const { lg } = useBreakpoint();
+  const {
+    expectationSuiteId: _expectationSuiteId,
+    validationResultId: _validationResultId,
+    assetId: _assetId,
+  } = useParams<{
+    expectationSuiteId: string;
+    validationResultId: string;
+    assetId: string;
+  }>();
+
+  const assetId = _assetId ?? "";
+  const expectationSuiteId = _expectationSuiteId ?? "";
+  const validationResultId = _validationResultId ?? "";
+
+  const [activeList, setActiveList] = useState<ActiveListType>("all");
+  const [search, setSearch] = useState("");
+  const onSearch = debounce((value: string) => {
+    setSearch(value);
+  }, 500);
+  const { state } = useLocation();
+
+  const { dataAssetData, dataAssetLoading, dataAssetError } =
+    useDataAsset(assetId);
+  const {
+    expectationSuiteData,
+    expectationSuiteLoading,
+    expectationSuiteError,
+    refetchExpectationSuite,
+  } = useExpectationSuite(expectationSuiteId);
+  const { columnNamesData, columnNamesLoading } =
+    useColumnNamesData(validationResultId);
+  const {
+    aggregateSuite,
+    aggregateSuiteLoading,
+    aggregateSuiteError,
+    refetchAggregateSuite,
+  } = useAggregateSuite(expectationSuiteId, assetId);
+
+  const validations = expectationSuiteData?.expectationSuiteV2?.validations;
+  const runHistoriesLoading = dataAssetLoading || expectationSuiteLoading;
+  const showAggregateRuns = validationResultId.length === 0;
+  const columnNames = searchColumnNames(columnNamesData, search);
+  const isTableLevelIncluded = GroupName.TABLE.toLowerCase().includes(
+    search.toLowerCase(),
+  );
+
+  //TODO: We are not handling errors for now. We will render useful error messages once we implement Union Error Types in the BE. e.g. "We couldn't render these expectations; review your config: exp1, exp2, exp3..."
+  const { validationResultData, validationResultLoading } = useValidationResult(
+    validationResultId,
+    isTableLevelIncluded,
+    columnNames,
+    columnNamesLoading,
+    () => {
+      // we would like to fetch the latest aggregate and suite each time we query a Validation Result
+      refetchExpectationSuite();
+      refetchAggregateSuite();
+    },
+  );
+
+  const runHistoriesForAllValidations = useRunHistoriesForValidations(
+    validations,
+    dataAssetData,
+    expectationSuiteId,
+  );
+
+  const validationResultGroups = useMemo(
+    () =>
+      groupValidationResults(validationResultData?.validationResult?.results),
+    [validationResultData?.validationResult?.results],
+  );
+  const filteredValidations:
+    | Record<string, Expectation_ValidationResultFragment[]>
+    | undefined =
+    activeList === "all"
+      ? validationResultGroups
+      : getFailedValidationResults(validationResultGroups);
+  const filteredSearchedColumnNames = getFilteredSearchedList(
+    filteredValidations,
+    columnNames,
+  );
+  const groupNameExpectationIdResultMap =
+    getGroupNameAggregateValidationResults(aggregateSuite);
+  const aggregateFilteredSearchColumnNames: string[] = [];
+  Object.entries(groupNameExpectationIdResultMap).map((entry) => {
+    aggregateFilteredSearchColumnNames.push(entry[0]);
+  });
+  const scrollLoading = showAggregateRuns
+    ? aggregateSuiteLoading
+    : validationResultLoading;
+  const scrollColumns = showAggregateRuns
+    ? aggregateFilteredSearchColumnNames
+    : filteredSearchedColumnNames;
+  const { selectedAnchor, onAnchorSelection } = useAnchorScroll(
+    scrollLoading,
+    scrollColumns,
+  );
+  const setFilterByFailures = (selection: ActiveListType) => {
+    setActiveList(selection);
+  };
+
+  const listLoading =
+    runHistoriesLoading || validationResultLoading || aggregateSuiteLoading;
+  const noData =
+    !listLoading &&
+    !aggregateSuite?.aggregateSuiteValidationResult.length &&
+    !filteredValidations &&
+    !search;
+  const noFailures =
+    !noData &&
+    activeList === "failures" &&
+    Object.keys(filteredValidations ?? []).length === 0;
+
+  if (!runHistoriesLoading && !dataAssetData?.dataAsset && !dataAssetError) {
+    return <NotFound />;
+  }
+
+  if (noData && (expectationSuiteError || aggregateSuiteError)) {
+    return (
+      <ErrorState errorMessage="There was a problem loading the Validation results" />
+    );
+  }
+
+  const filter = (
+    <ValidationsTabFilter
+      aggregateFilteredSearchColumnNames={aggregateFilteredSearchColumnNames}
+      aggregateSuiteLoading={aggregateSuiteLoading}
+      assetId={assetId}
+      columnNamesLoading={columnNamesLoading}
+      dataAssetData={dataAssetData}
+      expectationSuiteId={expectationSuiteId}
+      filteredSearchedColumnNames={filteredSearchedColumnNames}
+      onAnchorSelection={onAnchorSelection}
+      onSearch={onSearch}
+      runHistoriesForAllValidations={runHistoriesForAllValidations}
+      runHistoriesLoading={runHistoriesLoading}
+      selectedRun={selectedAnchor}
+      setFilterByFailures={setFilterByFailures}
+      validationResultId={validationResultId}
+      validationResultLoading={validationResultLoading}
+    />
+  );
+
+  useEffect(() => {
+    console.log(this.test);
+  }, []);
+
+  return (
+    <ValidationsTabHeader
+      dataAssetData={dataAssetData}
+      navigateBackToCheckpoints={state}
+      listLoading={listLoading}
+      expectationSuiteId={expectationSuiteId}
+    >
+      <ListAndFilterLayout filter={filter} stickyFilter={false}>
+        {noData ? (
+          <EmptyState
+            title="You don't have any Validations yet"
+            imageSize={!lg ? "xs" : undefined}
+          />
+        ) : (
+          <ValidationsTabResults
+            listLoading={listLoading}
+            showAggregateRuns={showAggregateRuns}
+            aggregateSuite={aggregateSuite}
+            selectedRun={selectedAnchor}
+            filteredValidations={filteredValidations}
+            noFailures={noFailures}
+          />
+        )}
+      </ListAndFilterLayout>
+    </ValidationsTabHeader>
+  );
 };
-</script>
-
-<style lang="less" scoped>
-.assignee-search {
-  min-width: auto;
-  width: 100%;
-  overflow: hidden;
-}
-
-.view-link {
-  height: 1rem;
-}
-
-.account-section {
-  margin-top: 1rem;
-}
-
-.link {
-  min-width: 6rem;
-  height: 3.5rem;
-  border-radius: 8px;
-  padding: 0.5625rem 0.4688rem;
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: center;
-  color: @systemBlue;
-  background-color: .color(@systemBlue, @quaternary) [];
-}
-
-:deep(.detail-body-section) {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.details-container {
-  display: grid;
-  grid-template-columns: 65% 35%;
-  grid-column-gap: 0.625rem;
-}
-
-:deep(.section-card) {
-  padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
-}
-
-.card-header {
-  font-weight: 600;
-  font-size: 1.25rem;
-  line-height: 1.75rem;
-}
-
-.card-header,
-.case-status-wrapper {
-  margin-bottom: 1rem;
-}
-
-.case-status-wrapper,
-.case-assignee-wrapper {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.case-status-title,
-.case-assignee-title {
-  min-width: 3.75rem;
-}
-
-.case-status-select {
-  :deep(.ant-select-selection) {
-    color: @secondaryLabel;
-  }
-  :deep(.ant-select-arrow) {
-    color: @secondaryLabel;
-  }
-  &.indigo :deep(.ant-select-selection) {
-    background-color: .color(@systemIndigo, @tertiary) [];
-    border-color: .color(@systemIndigo, @secondary) [];
-  }
-  &.red :deep(.ant-select-selection) {
-    background-color: .color(@systemRed, @tertiary) [];
-    border-color: .color(@systemRed, @secondary) [];
-  }
-  &.green :deep(.ant-select-selection) {
-    background-color: .color(@systemGreen, @tertiary) [];
-    border-color: .color(@systemGreen, @secondary) [];
-  }
-  &.gray :deep(.ant-select-selection) {
-    background-color: .color(@systemGray, @tertiary) [];
-    border-color: .color(@systemGray, @secondary) [];
-  }
-}
-
-.case-sub-details {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.account-sub-details + .account-sub-details,
-.case-sub-details + .case-sub-details {
-  margin-top: 1rem;
-}
-
-.sub-detail-text {
-  margin-left: 0.5rem;
-  color: @secondaryLabel;
-}
-
-.sub-detail-icon {
-  color: @quaternaryLabel;
-}
-</style>
 `;
 
 /**
@@ -518,5 +582,7 @@ export const volume = Volume.fromJSON({
   [defaultExport]: DefaultExport,
   [emptyFile]: EmptyFile,
   [fullVueSFC]: FullVueSFC,
+  [jsBasics]: JSBasics,
+  [reactComponent]: ReactComponent,
 });
 export const fsMock = createFsFromVolume(volume);

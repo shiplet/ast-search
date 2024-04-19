@@ -187,6 +187,11 @@ export default {
       statusUpdated: computed(() => t("statusUpdated")),
     };
   },
+  test: {
+    item() {
+      console.log(this.test);
+    },
+  },
   data() {
     return {
       details: {},
@@ -243,6 +248,7 @@ export default {
         state.specificWorkspaceUsers.map((account) => {
           return {
             name: "test",
+            wackyItemName: "test",
             id: account.id,
           };
         }),

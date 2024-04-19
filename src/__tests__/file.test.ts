@@ -1,7 +1,5 @@
 import { describe, expect, test } from "@jest/globals";
-import { Node } from "acorn";
 import { getAst, getAstFromPath, parseVueSFC } from "../file";
-import { type FileHandle } from "node:fs/promises";
 import { DefaultExport, defaultExport, fsMock, fullVueSFC } from "./setup";
 
 jest.mock("node:fs/promises", () => ({
@@ -14,13 +12,14 @@ jest.mock("node:fs/promises", () => ({
 describe("file", () => {
   test("it creates an ast", () => {
     const ast = getAst(DefaultExport);
-    expect(ast).toBeInstanceOf(Node);
+    expect(ast).toBeTruthy();
   });
 
   test("it parses a Vue SFC component", async () => {
     const { open } = fsMock.promises;
     const file = await open(fullVueSFC);
-    const contents = await parseVueSFC(file as unknown as FileHandle);
+    const lines = await file.readFile();
+    const contents = await parseVueSFC(lines as unknown as Buffer);
     [
       "<template>",
       "</template>",
@@ -35,7 +34,7 @@ describe("file", () => {
 
   test("it opens a file from path", async () => {
     const { ast, file } = await getAstFromPath(defaultExport);
-    expect(ast).toBeInstanceOf(Node);
+    expect(ast).toBeTruthy();
     expect(file).not.toBeNull();
     await file.close();
   });
