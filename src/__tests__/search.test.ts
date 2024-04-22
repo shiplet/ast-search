@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, test } from "@jest/globals";
 import {
   fsMock,
-  fullVueSFC,
   jsBasics,
   emptyFile,
   reactComponent,
+  vueSFCOnlyJS,
 } from "./setup";
-import { searchForRootNodes, SearchableNode } from "../search";
+import { searchForRootNodes } from "../search";
 import { getAstFromPath } from "../file";
 import { FileHandle } from "node:fs/promises";
 import { IFileHandle } from "memfs/lib/node/types/misc";
@@ -28,6 +28,7 @@ describe("searchForRootNodes", () => {
   });
 
   [
+    { root: "yellow", size: 2 },
     { root: "arrowFunction", size: 2 },
     { root: "objectExample", size: 1 },
     { root: "b", size: 2 },
@@ -35,9 +36,7 @@ describe("searchForRootNodes", () => {
     test(`it finds ${c.size} root node${c.size > 1 ? "s" : ""} named '${c.root}' in jsBasics.js`, async () => {
       ({ ast, file } = await getAstFromPath(jsBasics));
 
-      const found = searchForRootNodes(c.root)(
-        ast.program.body as unknown as SearchableNode[],
-      );
+      const found = searchForRootNodes(c.root)(ast.program.body);
       expect(found.size).toEqual(c.size);
     });
   });
@@ -49,11 +48,9 @@ describe("searchForRootNodes", () => {
     { root: "catch", size: 2 },
     { root: "specificWorkspaceUsers", size: 3 },
   ].forEach((c) => {
-    test(`it finds ${c.size} root node${c.size > 1 ? "s" : ""} named '${c.root}' in handleSetupThisOnlyJs.js`, async () => {
-      ({ ast, file } = await getAstFromPath(fullVueSFC));
-      const found = searchForRootNodes(c.root)(
-        ast.program.body as unknown as SearchableNode[],
-      );
+    test(`it finds ${c.size} root node${c.size > 1 ? "s" : ""} named '${c.root}' in hasSetupThisOnlyJs.js`, async () => {
+      ({ ast, file } = await getAstFromPath(vueSFCOnlyJS));
+      const found = searchForRootNodes(c.root)(ast.program.body);
 
       expect(found.size).toEqual(c.size);
     });
@@ -61,17 +58,13 @@ describe("searchForRootNodes", () => {
 
   test("it searches multiple root nodes", async () => {
     ({ ast, file } = await getAstFromPath(reactComponent));
-    const found = searchForRootNodes("useState")(
-      ast.program.body as unknown as SearchableNode[],
-    );
+    const found = searchForRootNodes("useState")(ast.program.body);
     expect(found.size).toEqual(3);
   });
 
   test("it handles an empty file", async () => {
     ({ ast, file } = await getAstFromPath(emptyFile));
-    const found = searchForRootNodes("any")(
-      ast.program.body as unknown as SearchableNode[],
-    );
+    const found = searchForRootNodes("any")(ast.program.body);
     expect(found.size).toEqual(0);
   });
 });

@@ -1,32 +1,20 @@
 import {
   isStandardized,
   File,
-  Identifier,
   Node,
   isIdentifier,
+  isScopable,
+  isDeclaration,
+  isVariableDeclarator,
 } from "@babel/types";
-import { hasIdentifier, hasKeyedNode } from "./helpers/nodes";
-
-export const NodeType = {
-  ArrowFunctionExpression: "ArrowFunctionExpression",
-  AwaitExpression: "AwaitExpression",
-  CallExpression: "CallExpression",
-  ExportDefaultDeclaration: "ExportDefaultDeclaration",
-  FunctionDeclaration: "FunctionDeclaration",
-  FunctionExpression: "FunctionExpression",
-  ObjectExpression: "ObjectExpression",
-  ObjectProperty: "ObjectProperty",
-  Property: "Property",
-  ThisExpression: "ThisExpression",
-  VariableDeclarator: "VariableDeclarator",
-};
-
-export type SearchableNode = Node & {
-  edges?: Array<SearchableNode>;
-  id?: Identifier;
-  key?: Identifier;
-  name?: string;
-};
+import {
+  getNodeBody,
+  hasBodyBlockStatement,
+  hasDeclarations,
+  hasIdentifier,
+  hasKeyedNode,
+  hasProperties,
+} from "./helpers/nodes.js";
 
 export interface SearchProps {
   ast: File;
@@ -44,70 +32,66 @@ export function searchForExp({
   search,
   filename,
 }: SearchProps): boolean {
-  const possibleRootNodes = searchForRootNodes(root)(
-    ast.program.body as unknown as SearchableNode[],
-  );
-  const nodeContainsExpression: Set<SearchableNode> = new Set();
+  const possibleRootNodes = searchForRootNodes(root)(ast.program.body);
+  const nodeContainsExpression: Set<Node> = new Set();
 
   if (possibleRootNodes.size > 0) {
     console.log("root nodes found: ");
-    let next = false;
-    for (const node of possibleRootNodes) {
-      let prefix: string;
-      if (possibleRootNodes.size === 1) {
-        prefix = BRANCH_TERMINUS;
-      } else {
-        if (!next) prefix = BRANCH;
-        else prefix = BRANCH_TERMINUS;
-      }
+    Array.from(possibleRootNodes).forEach((node, i) => {
+      const prefix = possibleRootNodes.size - i > 1 ? BRANCH : BRANCH_TERMINUS;
       console.log(
         `${prefix} ✅ ${filename}:${node.loc?.start.line}:${node.loc?.start.column}`,
-        node.key?.name ?? node.id?.name ?? root,
+        root,
       );
-      if (!next) next = true;
       // nodeContainsExpression.add(searchForExpression(node, expression));
-    }
+    });
   }
 
   return false;
 }
 
 export function searchForRootNodes(root: string) {
-  const possibleRootNodes: Set<SearchableNode> = new Set();
+  const possibleRootNodes: Set<Node> = new Set();
 
-  const checkKeyForRoot = (node: SearchableNode) => {
-    if (node.key && node.key.type === "Identifier") {
+  const checkKeyForRoot = (node: Node) => {
+    if ("key" in node && node.key && node.key.type === "Identifier") {
       if (node.key.name === root) {
         possibleRootNodes.add(node);
       }
     }
   };
 
-  const checkIdForRoot = (node: SearchableNode) => {
-    if (node.id && node.id.name === root) {
-      possibleRootNodes.add(node);
+  const checkIdForRoot = (node: Node) => {
+    if ("id" in node) {
+      if (isIdentifier(node.id)) {
+        if (node.id.name === root) possibleRootNodes.add(node);
+      }
     }
   };
 
-  const checkPossibleIdentifier = (node: SearchableNode) => {
+  const checkPossibleIdentifier = (node: Node) => {
     if (isIdentifier(node) && node.name === root) {
       possibleRootNodes.add(node);
     }
   };
 
-  return function innerRootNodeSearch(
-    body: SearchableNode[],
-  ): Set<SearchableNode> {
+  return function searchNodes(body: Node[]): Set<Node> {
     for (const node of body) {
       checkPossibleIdentifier(node);
+
+      // check standard js items
       if (isStandardized(node)) {
         if (hasKeyedNode(node)) {
           checkKeyForRoot(node);
         }
 
+        // check if it's an identifier
         if (hasIdentifier(node)) {
           checkIdForRoot(node);
         }
+
+        // search searchable node bodies
+        searchNodes(getNodeBody(node) as Node[]);
       }
     }
 
@@ -115,7 +99,7 @@ export function searchForRootNodes(root: string) {
   };
 }
 
-// export function searchForExpression(node: SearchableNode, expression: string) {}
+// export function searchForExpression(node: Node, expression: string) {}
 
 // export function searchFnForExp({ ast, fn, e }: FNSearchProps): boolean {
 //   const functionLikeNodes = depthFirstSearch(

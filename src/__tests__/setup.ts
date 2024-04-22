@@ -4,8 +4,7 @@ import { createFsFromVolume, Volume } from "memfs";
  * Standard JS default export
  */
 export const defaultExport = "/defaultExport.js";
-export const DefaultExport: string = `
-export default {
+export const DefaultExport: string = `export default {
     data() {
         return {
             item: 'test'
@@ -27,8 +26,7 @@ export const EmptyFile: string = ``;
  * JS Basics
  */
 export const jsBasics = "/jsBasics.js";
-export const JSBasics: string = `
-const arrowFunction = () => {};
+export const JSBasics: string = `const arrowFunction = () => {};
 function standardFunction() {}
 let varFunction = function () {};
 let x = "blue";
@@ -76,8 +74,7 @@ const objectExample = {
  * Full Vue SFC
  */
 export const fullVueSFC = "/fullVueSFC.vue";
-export const FullVueSFC: string = `
-<template>
+export const FullVueSFC: string = `<template>
   <div class="details-container">
     <div class="container-left">
       <SectionCard
@@ -567,11 +564,299 @@ export default {
 `;
 
 /**
+ * Vue SFC Only JS portion
+ */
+export const vueSFCOnlyJS = "/vueSFCOnlyJS.js";
+export const VueSFCOnlyJS = `import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+import ApiService from "@/api/apiService";
+import { mapState, mapGetters, mapActions, mapMutations, useStore } from "vuex";
+import SectionCard from "@/components/common/SectionCard";
+import { formatDateToDayMonthShortYear } from "@/utils/formatter";
+import {
+  CASE_DETAIL_ICONS,
+  ASSIGNABLE_USER_TYPE,
+} from "@/constants/crm/properties";
+import parsePhoneNumber from "libphonenumber-js";
+import LOCALE from "@/constants/common/locale";
+import DropdownSearchWithIcon from "@/components/common/DropdownSearchWithIcon";
+import isEmpty from "lodash/isEmpty";
+import { getActiveWorkspace } from "@/utils/activeWorkspace";
+
+function testingFunctions() {
+  // function declaration
+  console.log("bluey");
+  console.log(this.test);
+}
+
+function closureTest() {
+  return function secondClosure() {
+    console.log("this", this.test);
+  };
+}
+
+const arrowFunctions = () => {
+  // arrow function expression
+  console.log(this.test);
+};
+
+const expressionTest = function () {
+  console.log(this.test);
+};
+
+export default {
+  name: "CaseDetailsView",
+  components: {
+    SectionCard,
+    DropdownSearchWithIcon,
+  },
+  setup() {
+    const store = useStore();
+    const caseSubDetails = computed(() => {
+      return {
+        case_id: store.state.casesDetails.id,
+        location:
+          store.state.viewableWorkspaces.find(
+            (workspace) =>
+              workspace.id === store.state.casesDetails.app_workspace_id,
+          )?.name || "",
+        created_at: store.state.casesDetails.created_at,
+        created_by: store.state.casesDetails.created_by,
+        test() {
+          console.log("howdy", this.test);
+        },
+      };
+    });
+    const { t } = useI18n({
+      locale: "en",
+      messages: {
+        en: {
+          sideDetailHeader: "Case Details",
+          sideAccountsOverviewHeader: "Accounts Overview",
+          caseSubCreatedAt: "Created {date}",
+          caseSubCreatedBy: "Created by {name}",
+          sideDetailStatusLabel: "Status",
+          sideDetailAssigneeLabel: "Assignee",
+          viewAccount: "View Account",
+          assignee: {
+            placeholder: "Unassigned",
+            updated: "Assignee Updated",
+          },
+          statusUpdated: "Status Updated",
+        },
+      },
+    });
+
+    return {
+      t,
+      caseSubDetails,
+      caseSubCreatedBy: computed(() =>
+        t("caseSubCreatedBy", {
+          name: "test",
+        }),
+      ),
+      caseSubCreatedAt: computed(() =>
+        t("caseSubCreatedAt", {
+          date: formatDateToDayMonthShortYear(caseSubDetails.value.created_at),
+        }),
+      ),
+      assigneeUpdated: computed(() => t("assignee.updated", this.test)),
+      statusUpdated: computed(() => t("statusUpdated")),
+    };
+  },
+  test: {
+    item() {
+      console.log(this.test);
+    },
+  },
+  data() {
+    return {
+      details: {},
+      disableDropdown: false,
+      selectedStatus: "",
+      bloop() {
+        return this.smack;
+      },
+    };
+  },
+  created() {
+    const workspaceQuery = this.$route.query?.workspace;
+    if (workspaceQuery && workspaceQuery !== getActiveWorkspace().id) {
+      const targetWorkspace = this.workspaces.find(
+        (ws) => ws.id === workspaceQuery,
+      );
+      const basePath = "cases";
+      if (targetWorkspace) {
+        this.setWorkspaceSwitchWarning({
+          visible: true,
+          target: targetWorkspace,
+          basePath,
+        });
+      } else {
+        this.$router.push({ name: basePath });
+      }
+    }
+
+    this.details = {};
+    this.clearCaseDetails();
+    this.clearSpecificWorkspaceUsers();
+    this.CASE_DETAIL_ICONS = CASE_DETAIL_ICONS;
+    this.getCaseDetailsByCaseId(this.$route.params.caseId).then(() => {
+      this.selectedStatus = this.casesDetails.status;
+      this.getMembersAccountDetails(this.casesDetails.account_id).then(
+        (res) => {
+          this.details = res;
+        },
+      );
+      this.loadSpecificWorkspaceUsers({
+        workspaceId: this.casesDetails.app_workspace_id,
+        type: ASSIGNABLE_USER_TYPE.case,
+      });
+    });
+    if (!this.workspaceConfigs.case_types?.length) {
+      this.loadWorkspaceConfigs().then(() => {});
+    }
+  },
+  computed: {
+    ...mapState({
+      casesDetails: "casesDetails",
+      workspaces: "workspaces",
+      specificWorkspaceUsers: (state) =>
+        state.specificWorkspaceUsers.map((account) => {
+          return {
+            name: "test",
+            wackyItemName: "test",
+            id: account.id,
+          };
+        }),
+      workspaceConfigs: "workspaceConfigs",
+    }),
+    ...mapGetters(["caseStatusDropdown"]),
+    statusOptions() {
+      if (isEmpty(this.caseStatusDropdown) || !this.casesDetails.type) {
+        return [];
+      }
+
+      const dropdownType = this.caseStatusDropdown[this.casesDetails.type];
+      return Object.keys(dropdownType).reduce((result, key) => {
+        if (
+          this.casesDetails.status === undefined ||
+          (!!this.casesDetails.status &&
+            this.casesDetails.status !== "" &&
+            dropdownType[key].value !== "") ||
+          (!!this.casesDetails.status && this.casesDetails.status === "")
+        ) {
+          result.push(dropdownType[key]);
+        }
+        return result;
+      }, []);
+    },
+    statusColor() {
+      if (isEmpty(this.caseStatusDropdown) || !this.casesDetails.type) {
+        return "";
+      }
+      return this.caseStatusDropdown[this.casesDetails.type][
+        this.selectedStatus
+      ]?.color;
+    },
+    assigneeId() {
+      return this.specificWorkspaceUsers.find(
+        (user) => user.id === this.casesDetails.assignee_id,
+      )?.id;
+    },
+    formattedSubDetails() {
+      return {
+        ...this.caseSubDetails,
+        created_by: this.caseSubDetails?.created_by
+          ? this.caseSubCreatedBy
+          : null,
+        created_at: this.caseSubCreatedAt,
+      };
+    },
+    formattedAccountDetails() {
+      return {
+        name: this.details.name,
+        phone_number: this.details.phone_number
+          ? parsePhoneNumber(this.details.phone_number, "US")?.format(
+              "NATIONAL",
+            )
+          : "",
+        email_address: this.details.email_address,
+        preferred_language:
+          LOCALE[this.details.preferred_language] ||
+          this.details.preferred_language,
+      };
+    },
+    sectionCardAdditionalClasses() {
+      return ["detail-body-section"];
+    },
+    toMembers() {
+      return {
+        name: "account-details",
+        params: { accountId: this.details.id },
+      };
+    },
+    headerMemberName() {
+      return this.details.name;
+    },
+  },
+  methods: {
+    ...mapActions([
+      "getCaseDetailsByCaseId",
+      "getMembersAccountDetails",
+      "loadSpecificWorkspaceUsers",
+      "loadWorkspaceConfigs",
+    ]),
+    ...mapMutations([
+      "clearSpecificWorkspaceUsers",
+      "clearCaseDetails",
+      "setWorkspaceSwitchWarning",
+      this.checkNames,
+    ]),
+    handleSelectedKey(assigneeId) {
+      this.disableDropdown = true;
+
+      ApiService.updateCase(this.caseSubDetails.case_id, {
+        assignee_id: assigneeId === undefined ? null : assigneeId,
+      })
+        .then(() => {
+          this.$message.success(this.assigneeUpdated);
+        })
+        .catch((error) => {
+          this.$message.error(
+            error.response.data.detail || error.response.data.assignee_id,
+          );
+        })
+        .finally(() => {
+          this.disableDropdown = false;
+        });
+    },
+    statusChange() {
+      this.disableDropdown = true;
+      ApiService.updateCase(this.caseSubDetails.case_id, {
+        status: this.selectedStatus,
+      })
+        .then(() => {
+          this.$message.success(this.statusUpdated);
+          this.getCaseDetailsByCaseId(this.$route.params.caseId);
+        })
+        .catch((error) => {
+          this.selectedStatus = this.casesDetails.status;
+          this.$message.error(error.response.data.detail);
+        })
+        .finally(() => {
+          this.disableDropdown = false;
+        });
+    },
+  },
+};
+`;
+
+/**
  * Standard React Component
  */
 export const reactComponent = "/reactComponent.tsx";
-export const ReactComponent = `
-import { useState, useMemo } from "react";
+export const ReactComponent = `import { useState, useMemo } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { Expectation_ValidationResultFragment } from "src/api/graphql/graphql-operations";
 import { debounce } from "lodash-es";
@@ -791,5 +1076,6 @@ export const volume = Volume.fromJSON({
   [fullVueSFC]: FullVueSFC,
   [jsBasics]: JSBasics,
   [reactComponent]: ReactComponent,
+  [vueSFCOnlyJS]: VueSFCOnlyJS,
 });
 export const fsMock = createFsFromVolume(volume);
