@@ -1,6 +1,12 @@
 import { describe, expect, test } from "@jest/globals";
 import { getAst, getAstFromPath, parseVueSFC } from "../file";
-import { DefaultExport, defaultExport, fsMock, fullVueSFC } from "./setup";
+import {
+  DefaultExport,
+  defaultExport,
+  fsMock,
+  fullVueSFC,
+  reactComponent,
+} from "./setup";
 
 jest.mock("node:fs/promises", () => ({
   ...jest.requireActual("node:fs/promises"),
@@ -30,6 +36,13 @@ describe("file", () => {
     ].forEach((v) => {
       expect(contents.indexOf(v)).toBe(-1);
     });
+  });
+
+  test("it parses a React component", async () => {
+    const { ast, file } = await getAstFromPath(reactComponent);
+    expect(ast).toBeTruthy();
+    expect(file).not.toBeNull();
+    await file.close();
   });
 
   test("it opens a file from path", async () => {

@@ -73,10 +73,103 @@ const objectExample = {
 `;
 
 /**
- * Jumbo Vue SFC
+ * Full Vue SFC
  */
 export const fullVueSFC = "/fullVueSFC.vue";
-export const FullVueSFC: string = `import { computed } from "vue";
+export const FullVueSFC: string = `
+<template>
+  <div class="details-container">
+    <div class="container-left">
+      <SectionCard
+        ><slot name="detailHeader" v-bind:memberName="headerMemberName"
+      /></SectionCard>
+      <SectionCard :sectionCardAdditionalClasses="sectionCardAdditionalClasses"
+        ><slot name="detailBody"
+      /></SectionCard>
+    </div>
+    <div class="container-right">
+      <SectionCard>
+        <h2 class="card-header">{{ t("sideDetailHeader") }}</h2>
+        <div class="case-status-wrapper">
+          <div class="case-status-title">{{ t("sideDetailStatusLabel") }}</div>
+          <a-select
+            size="small"
+            class="case-status-select"
+            :class="statusColor"
+            :disabled="disableDropdown"
+            :dropdownMatchSelectWidth="false"
+            v-model:value="selectedStatus"
+            @change="statusChange"
+          >
+            <a-select-option
+              v-for="(option, idx) in statusOptions"
+              :key="idx"
+              :value="option.value"
+            >
+              {{ option.displayValue }}
+            </a-select-option>
+          </a-select>
+        </div>
+        <div class="case-assignee-wrapper">
+          <div class="case-assignee-title">
+            {{ t("sideDetailAssigneeLabel") }}
+          </div>
+          <DropdownSearchWithIcon
+            size="small"
+            :optionsArr="specificWorkspaceUsers"
+            :placeholderText="t('assignee.placeholder')"
+            :prefilledValue="assigneeId"
+            :loading="disableDropdown"
+            :disabled="disableDropdown"
+            :deSelectEnabled="true"
+            class="assignee-search"
+            @selectedKey="handleSelectedKey"
+          />
+        </div>
+        <a-divider />
+        <ul
+          class="case-sub-details"
+          v-for="(val, key) in formattedSubDetails"
+          :key="key"
+        >
+          <li class="sub-detail" v-if="val">
+            <FontAwesomeIcon
+              :icon="CASE_DETAIL_ICONS[key]"
+              class="sub-detail-icon"
+            /><span class="sub-detail-text">{{ val }}</span>
+          </li>
+        </ul>
+      </SectionCard>
+      <SectionCard>
+        <h2 class="card-header">{{ t("sideAccountsOverviewHeader") }}</h2>
+        <ul
+          class="account-sub-details"
+          v-for="(val, key) in formattedAccountDetails"
+          :key="key"
+        >
+          <li class="sub-detail">
+            <FontAwesomeIcon
+              :icon="CASE_DETAIL_ICONS[key]"
+              class="sub-detail-icon"
+            /><span class="sub-detail-text">{{ val }}</span>
+          </li>
+        </ul>
+        <section class="account-section">
+          <router-link :to="toMembers" class="link" v-if="details.id">
+            <font-awesome-icon
+              icon="fa-solid fa-circle-user"
+              class="view-link"
+            />
+            <span>{{ t("viewAccount") }}</span>
+          </router-link>
+        </section>
+      </SectionCard>
+    </div>
+  </div>
+</template>
+
+<script>
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import ApiService from "@/api/apiService";
 import { mapState, mapGetters, mapActions, mapMutations, useStore } from "vuex";
@@ -358,7 +451,120 @@ export default {
         });
     },
   },
-};`;
+};
+</script>
+
+<style lang="less" scoped>
+.assignee-search {
+  min-width: auto;
+  width: 100%;
+  overflow: hidden;
+}
+
+.view-link {
+  height: 1rem;
+}
+
+.account-section {
+  margin-top: 1rem;
+}
+
+.link {
+  min-width: 6rem;
+  height: 3.5rem;
+  border-radius: 8px;
+  padding: 0.5625rem 0.4688rem;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  color: @systemBlue;
+  background-color: .color(@systemBlue, @quaternary) [];
+}
+
+:deep(.detail-body-section) {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.details-container {
+  display: grid;
+  grid-template-columns: 65% 35%;
+  grid-column-gap: 0.625rem;
+}
+
+:deep(.section-card) {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+.card-header {
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.card-header,
+.case-status-wrapper {
+  margin-bottom: 1rem;
+}
+
+.case-status-wrapper,
+.case-assignee-wrapper {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.case-status-title,
+.case-assignee-title {
+  min-width: 3.75rem;
+}
+
+.case-status-select {
+  :deep(.ant-select-selection) {
+    color: @secondaryLabel;
+  }
+  :deep(.ant-select-arrow) {
+    color: @secondaryLabel;
+  }
+  &.indigo :deep(.ant-select-selection) {
+    background-color: .color(@systemIndigo, @tertiary) [];
+    border-color: .color(@systemIndigo, @secondary) [];
+  }
+  &.red :deep(.ant-select-selection) {
+    background-color: .color(@systemRed, @tertiary) [];
+    border-color: .color(@systemRed, @secondary) [];
+  }
+  &.green :deep(.ant-select-selection) {
+    background-color: .color(@systemGreen, @tertiary) [];
+    border-color: .color(@systemGreen, @secondary) [];
+  }
+  &.gray :deep(.ant-select-selection) {
+    background-color: .color(@systemGray, @tertiary) [];
+    border-color: .color(@systemGray, @secondary) [];
+  }
+}
+
+.case-sub-details {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.account-sub-details + .account-sub-details,
+.case-sub-details + .case-sub-details {
+  margin-top: 1rem;
+}
+
+.sub-detail-text {
+  margin-left: 0.5rem;
+  color: @secondaryLabel;
+}
+
+.sub-detail-icon {
+  color: @quaternaryLabel;
+}
+</style>
+`;
 
 /**
  * Standard React Component
