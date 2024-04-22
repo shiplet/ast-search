@@ -76,7 +76,7 @@ const y = yargs(process.argv.slice(2))
     process.exit(0);
   }
 
-  const found = searchForExp({ ast, root, expression });
+  const found = searchForExp({ ast, root, expression, filename });
   found && console.log("✅", filename);
 
   await file.close();

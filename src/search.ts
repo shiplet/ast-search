@@ -25,19 +25,33 @@ export interface SearchProps {
   ast: File;
   root: string;
   expression: string;
+  filename: string;
 }
 
-export function searchForExp({ ast, root, expression }: SearchProps): boolean {
+export function searchForExp({
+  ast,
+  root,
+  expression,
+  filename,
+}: SearchProps): boolean {
   const possibleRootNodes = searchForRootNodes(root)(
     ast.program.body as unknown as SearchableNode[],
   );
-  console.log("possibleRootNodes");
-  for (const node of possibleRootNodes) {
-    console.log(
-      node.key?.name ?? node.id?.name ?? root,
-      `${node.loc?.start.line}:${node.loc?.start.column}`,
-    );
+  const nodeContainsExpression: Set<SearchableNode> = new Set();
+
+  if (possibleRootNodes.size > 0) {
+    console.log("root nodes found: ");
+    let next = false;
+    for (const node of possibleRootNodes) {
+      console.log(
+        `${next ? "└──" : "├──"} ✅ ${filename}:${node.loc?.start.line}:${node.loc?.start.column}`,
+        node.key?.name ?? node.id?.name ?? root,
+      );
+      if (!next) next = true;
+      // nodeContainsExpression.add(searchForExpression(node, expression));
+    }
   }
+
   return false;
 }
 
@@ -134,6 +148,8 @@ export function searchForRootNodes(root: string) {
     return possibleRootNodes;
   };
 }
+
+export function searchForExpression(node: SearchableNode, expression: string) {}
 
 // export function searchFnForExp({ ast, fn, e }: FNSearchProps): boolean {
 //   const functionLikeNodes = depthFirstSearch(

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "@jest/globals";
-import { fsMock, fullVueSFC, jsBasics } from "./setup";
+import { fsMock, fullVueSFC, jsBasics, emptyFile } from "./setup";
 import { searchForRootNodes, SearchableNode } from "../search";
 import { getAstFromPath } from "../file";
 import { FileHandle } from "node:fs/promises";
@@ -51,5 +51,13 @@ describe("searchForRootNodes", () => {
 
       expect(found.size).toEqual(c.size);
     });
+  });
+
+  test("it handles an empty file", async () => {
+    ({ ast, file } = await getAstFromPath(emptyFile));
+    const found = searchForRootNodes("any")(
+      ast.program.body as unknown as SearchableNode[],
+    );
+    expect(found.size).toEqual(0);
   });
 });
