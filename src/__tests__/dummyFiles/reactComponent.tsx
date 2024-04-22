@@ -49,11 +49,14 @@ export const ValidationsTab = () => {
 
   const [activeList, setActiveList] = useState<ActiveListType>("all");
   const [search, setSearch] = useState("");
+  const [test, setTest] = useState(false);
   const onSearch = debounce((value: string) => {
     setSearch(value);
   }, 500);
   const { state } = useLocation();
 
+  console.log(test);
+  setTest(true);
   const { dataAssetData, dataAssetLoading, dataAssetError } =
     useDataAsset(assetId);
   const {

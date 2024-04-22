@@ -1,4 +1,11 @@
-import { File, Identifier, Node } from "@babel/types";
+import {
+  isStandardized,
+  File,
+  Identifier,
+  Node,
+  isIdentifier,
+} from "@babel/types";
+import { hasIdentifier, hasKeyedNode } from "./helpers/nodes";
 
 export const NodeType = {
   ArrowFunctionExpression: "ArrowFunctionExpression",
@@ -24,14 +31,17 @@ export type SearchableNode = Node & {
 export interface SearchProps {
   ast: File;
   root: string;
-  expression: string;
+  search: string;
   filename: string;
 }
+
+const BRANCH_TERMINUS = "└──";
+const BRANCH = "├──";
 
 export function searchForExp({
   ast,
   root,
-  expression,
+  search,
   filename,
 }: SearchProps): boolean {
   const possibleRootNodes = searchForRootNodes(root)(
@@ -43,8 +53,15 @@ export function searchForExp({
     console.log("root nodes found: ");
     let next = false;
     for (const node of possibleRootNodes) {
+      let prefix: string;
+      if (possibleRootNodes.size === 1) {
+        prefix = BRANCH_TERMINUS;
+      } else {
+        if (!next) prefix = BRANCH;
+        else prefix = BRANCH_TERMINUS;
+      }
       console.log(
-        `${next ? "└──" : "├──"} ✅ ${filename}:${node.loc?.start.line}:${node.loc?.start.column}`,
+        `${prefix} ✅ ${filename}:${node.loc?.start.line}:${node.loc?.start.column}`,
         node.key?.name ?? node.id?.name ?? root,
       );
       if (!next) next = true;
@@ -73,7 +90,7 @@ export function searchForRootNodes(root: string) {
   };
 
   const checkPossibleIdentifier = (node: SearchableNode) => {
-    if (node.name && node.name === root) {
+    if (isIdentifier(node) && node.name === root) {
       possibleRootNodes.add(node);
     }
   };
@@ -83,65 +100,14 @@ export function searchForRootNodes(root: string) {
   ): Set<SearchableNode> {
     for (const node of body) {
       checkPossibleIdentifier(node);
-      switch (node.type) {
-        case "ObjectExpression":
-        case "ObjectPattern":
-          innerRootNodeSearch(node.properties as unknown as SearchableNode[]);
-          break;
-        case "VariableDeclaration":
-          innerRootNodeSearch(node.declarations as unknown as SearchableNode[]);
-          break;
-        case "VariableDeclarator":
-          checkIdForRoot(node);
-          if (node.init && "properties" in node.init) {
-            innerRootNodeSearch(
-              node.init.properties as unknown as SearchableNode[],
-            );
-          }
-          break;
-        case "ObjectProperty":
-        case "ClassProperty":
+      if (isStandardized(node)) {
+        if (hasKeyedNode(node)) {
           checkKeyForRoot(node);
-          innerRootNodeSearch([node.value as unknown as SearchableNode]);
-          break;
-        case "ObjectMethod":
-        case "ClassMethod":
-          checkKeyForRoot(node);
-          if (node.body && node.body.type === "BlockStatement") {
-            innerRootNodeSearch(node.body.body as unknown as SearchableNode[]);
-          }
-          break;
-        case "FunctionExpression":
-        case "ArrowFunctionExpression":
-          checkIdForRoot(node);
-          if (node.body && node.body) {
-            innerRootNodeSearch([node.body] as unknown as SearchableNode[]);
-          }
-          break;
-        case "ExpressionStatement":
-          innerRootNodeSearch([node.expression] as unknown as SearchableNode[]);
-          break;
-        case "ReturnStatement":
-          innerRootNodeSearch([node.argument] as unknown as SearchableNode[]);
-          break;
-        case "MemberExpression":
-          innerRootNodeSearch([
-            node.property,
-            node.object,
-          ] as unknown as SearchableNode[]);
-          break;
-        default:
-          checkIdForRoot(node);
-          Object.keys(node).forEach((p) => {
-            if (isNode(node[p])) {
-              innerRootNodeSearch([node[p]]);
-            }
-            if (isArray(node[p])) {
-              innerRootNodeSearch(node[p]);
-            }
-          });
+        }
 
-          break;
+        if (hasIdentifier(node)) {
+          checkIdForRoot(node);
+        }
       }
     }
 
@@ -149,7 +115,7 @@ export function searchForRootNodes(root: string) {
   };
 }
 
-export function searchForExpression(node: SearchableNode, expression: string) {}
+// export function searchForExpression(node: SearchableNode, expression: string) {}
 
 // export function searchFnForExp({ ast, fn, e }: FNSearchProps): boolean {
 //   const functionLikeNodes = depthFirstSearch(

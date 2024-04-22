@@ -31,7 +31,7 @@ interface Arguments {
   [x: string]: unknown;
   filename: string;
   root: string;
-  expression: string;
+  search: string;
   debug?: boolean;
 }
 
@@ -46,12 +46,13 @@ const y = yargs(process.argv.slice(2))
       demandOption: true,
     },
     root: {
+      alias: "r",
       type: "string",
       describe: "the function body to search",
       demandOption: true,
     },
-    expression: {
-      alias: "e",
+    search: {
+      alias: "s",
       describe: "the type of expression",
       choices: expressions,
       demandOption: true,
@@ -68,7 +69,7 @@ const y = yargs(process.argv.slice(2))
  */
 (async () => {
   const argv = await y.parse();
-  const { filename, root, expression, debug } = argv as unknown as Arguments;
+  const { filename, root, search, debug } = argv as unknown as Arguments;
   const { ast, file } = await getAstFromPath(filename);
 
   if (debug) {
@@ -76,7 +77,7 @@ const y = yargs(process.argv.slice(2))
     process.exit(0);
   }
 
-  const found = searchForExp({ ast, root, expression, filename });
+  const found = searchForExp({ ast, root, search, filename });
   found && console.log("✅", filename);
 
   await file.close();
