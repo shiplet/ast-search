@@ -15,6 +15,7 @@ import {
   hasKeyedNode,
   hasProperties,
 } from "./helpers/nodes.js";
+import { type ExprClause, type Query } from "./query.js";
 
 export interface SearchProps {
   ast: File;
@@ -99,7 +100,79 @@ export function searchForRootNodes(root: string) {
   };
 }
 
-// export function searchForExpression(node: Node, expression: string) {}
+export interface Match {
+  file: string;
+  line: number;
+  col: number;
+  text: string;
+}
+
+const SKIP_KEYS = new Set([
+  "loc", "start", "end", "extra", "tokens",
+  "comments", "innerComments", "leadingComments", "trailingComments",
+]);
+
+export function searchForExpression(node: Node, expr: ExprClause): boolean {
+  return expr.some((andClause) =>
+    andClause.every((pred) =>
+      pred.negated ? node.type !== pred.babelType : node.type === pred.babelType,
+    ),
+  );
+}
+
+function walkAllNodes(node: Node, visitor: (n: Node) => void): void {
+  visitor(node);
+  for (const key of Object.keys(node)) {
+    if (SKIP_KEYS.has(key)) continue;
+    const val = (node as unknown as Record<string, unknown>)[key];
+    if (Array.isArray(val)) {
+      for (const child of val) {
+        if (child && typeof child === "object" && "type" in child) {
+          walkAllNodes(child as Node, visitor);
+        }
+      }
+    } else if (val && typeof val === "object" && "type" in val) {
+      walkAllNodes(val as Node, visitor);
+    }
+  }
+}
+
+export function runQuery(query: Query, ast: File, filename = ""): Match[] {
+  const toMatch = (node: Node): Match => ({
+    file: filename,
+    line: node.loc?.start.line ?? 0,
+    col: node.loc?.start.column ?? 0,
+    text: node.type,
+  });
+
+  switch (query.kind) {
+    case "bare-ident": {
+      const nodes = searchForRootNodes(query.name)(ast.program.body);
+      return Array.from(nodes).map(toMatch);
+    }
+    case "bare-expr": {
+      const results: Match[] = [];
+      for (const stmt of ast.program.body) {
+        walkAllNodes(stmt as Node, (n) => {
+          if (searchForExpression(n, query.expr)) results.push(toMatch(n));
+        });
+      }
+      return results;
+    }
+    case "scope": {
+      const rootNodes = searchForRootNodes(query.scope)(ast.program.body);
+      const matches: Match[] = [];
+      for (const rootNode of rootNodes) {
+        walkAllNodes(rootNode, (n) => {
+          if (n !== rootNode && searchForExpression(n, query.expr)) {
+            matches.push(toMatch(n));
+          }
+        });
+      }
+      return matches;
+    }
+  }
+}
 
 // export function searchFnForExp({ ast, fn, e }: FNSearchProps): boolean {
 //   const functionLikeNodes = depthFirstSearch(

@@ -5,13 +5,10 @@
   "main": "main.js",
   "scripts": {
     "dev": "npx tsc --watch",
-    "debug:vue": "npx tsc && node ./build/main.js -f src/__tests__/dummyFiles/hasSetupThisOnlyJs.js -r finally -s ThisExpression",
-    "debug:vue:write": "npx tsc && node ./build/main.js -f src/__tests__/dummyFiles/hasSetupThisOnlyJs.js -r setup -s ThisExpression -d",
-    "debug:react": "npx tsc && node ./build/main.js -f src/__tests__/dummyFiles/reactComponent.tsx -r useState -s ThisExpression",
-    "debug:react:write": "npx tsc && node ./build/main.js -f src/__tests__/dummyFiles/reactComponent.tsx -r useState -s ThisExpression -d",
-    "debug:empty": "npx tsc && node ./build/main.js -f ./src/__tests__/dummyFiles/empty.ts -r ValidationsTab -s ThisExpression",
-    "debug:basics": "npx tsc && node ./build/main.js -f ./src/__tests__/dummyFiles/jsBasics.js -r arrowFunction -s ThisExpression",
-    "debug:basics:write": "npx tsc && node ./build/main.js -f ./src/__tests__/dummyFiles/jsBasics.js -r yellow -s ThisExpression -d",
+    "debug:vue": "npx tsc && node ./build/main.js 'setup > this' --dir src/__tests__/dummyFiles",
+    "debug:react": "npx tsc && node ./build/main.js 'useState' --dir src/__tests__/dummyFiles",
+    "debug:empty": "npx tsc && node ./build/main.js 'ValidationsTab > this' --dir src/__tests__/dummyFiles",
+    "debug:basics": "npx tsc && node ./build/main.js 'arrowFunction' --dir src/__tests__/dummyFiles",
     "test": "jest",
     "build": "cp main.js ast-search"
   },

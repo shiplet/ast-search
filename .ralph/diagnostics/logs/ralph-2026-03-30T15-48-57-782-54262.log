@@ -1,0 +1,144 @@
+[2m2026-03-30T21:48:57.798204Z[0m [33m WARN[0m [2mralph::loop_runner[0m[2m:[0m Interactive mode requested but stdout is not a TTY, falling back to autonomous
+[2m2026-03-30T21:48:57.805784Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T21:48:57.805800Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T21:48:57.805808Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T21:48:57.805814Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T21:50:40.893278Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T21:50:40.893310Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T21:50:40.893320Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T21:50:40.893345Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T21:50:40.893380Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (1743 chars) into prompt
+[2m2026-03-30T21:52:02.911375Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T21:52:02.911458Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T21:52:02.911474Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T21:52:02.911483Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T21:52:02.911581Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (1743 chars) into prompt
+[2m2026-03-30T21:53:35.383317Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T21:53:35.383430Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T21:53:35.383463Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T21:53:35.383480Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T21:53:35.383607Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (1743 chars) into prompt
+[2m2026-03-30T21:54:23.723683Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T21:54:23.723860Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T21:54:23.723925Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T21:54:23.723960Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T21:54:23.724180Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (1743 chars) into prompt
+[2m2026-03-30T21:55:01.990516Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T21:55:01.990663Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T21:55:01.990694Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T21:55:01.990710Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T21:55:01.990860Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (1743 chars) into prompt
+[2m2026-03-30T21:55:01.991153Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (1 ready, 1 open, 0 closed) into prompt
+[2m2026-03-30T21:57:03.086784Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T21:57:03.086919Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T21:57:03.086972Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T21:57:03.086998Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T21:57:03.087204Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (1743 chars) into prompt
+[2m2026-03-30T21:57:03.087640Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (0 ready, 0 open, 1 closed) into prompt
+[2m2026-03-30T21:57:52.586026Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T21:57:52.586133Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T21:57:52.586167Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T21:57:52.586186Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T21:57:52.586338Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (1743 chars) into prompt
+[2m2026-03-30T21:57:52.586671Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (0 ready, 0 open, 1 closed) into prompt
+[2m2026-03-30T21:58:28.786866Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T21:58:28.786975Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T21:58:28.787010Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T21:58:28.787027Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T21:58:28.787172Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (1743 chars) into prompt
+[2m2026-03-30T21:58:28.787453Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (0 ready, 0 open, 1 closed) into prompt
+[2m2026-03-30T21:59:19.426136Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T21:59:19.426198Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T21:59:19.426214Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T21:59:19.426223Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T21:59:19.426344Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (1743 chars) into prompt
+[2m2026-03-30T21:59:19.426534Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (1 ready, 1 open, 1 closed) into prompt
+[2m2026-03-30T22:03:30.296332Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T22:03:30.297479Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T22:03:30.297547Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T22:03:30.297569Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T22:03:30.297731Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (2470 chars) into prompt
+[2m2026-03-30T22:03:30.298123Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (0 ready, 0 open, 2 closed) into prompt
+[2m2026-03-30T22:05:29.313012Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T22:05:29.313115Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T22:05:29.313145Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T22:05:29.313160Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T22:05:29.313289Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (2470 chars) into prompt
+[2m2026-03-30T22:05:29.313567Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (0 ready, 0 open, 2 closed) into prompt
+[2m2026-03-30T22:06:11.812508Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T22:06:11.812666Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T22:06:11.812721Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T22:06:11.812751Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T22:06:11.812963Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (2470 chars) into prompt
+[2m2026-03-30T22:06:11.813518Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (0 ready, 0 open, 2 closed) into prompt
+[2m2026-03-30T22:07:00.009322Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T22:07:00.009377Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T22:07:00.009397Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T22:07:00.009409Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T22:07:00.009493Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (2470 chars) into prompt
+[2m2026-03-30T22:07:00.009749Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (1 ready, 1 open, 2 closed) into prompt
+[2m2026-03-30T22:10:27.972302Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T22:10:27.973845Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T22:10:27.973910Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T22:10:27.973938Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T22:10:27.974141Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (3028 chars) into prompt
+[2m2026-03-30T22:10:27.974614Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (0 ready, 0 open, 3 closed) into prompt
+[2m2026-03-30T22:12:18.371550Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T22:12:18.371697Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T22:12:18.371763Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T22:12:18.371793Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T22:12:18.372012Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (3732 chars) into prompt
+[2m2026-03-30T22:12:18.372562Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (0 ready, 0 open, 3 closed) into prompt
+[2m2026-03-30T22:13:57.832459Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T22:13:57.833679Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T22:13:57.833760Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T22:13:57.833790Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T22:13:57.834032Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (3732 chars) into prompt
+[2m2026-03-30T22:13:57.834626Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (0 ready, 0 open, 3 closed) into prompt
+[2m2026-03-30T22:14:46.849643Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T22:14:46.849825Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T22:14:46.849902Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T22:14:46.849945Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T22:14:46.850239Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (3732 chars) into prompt
+[2m2026-03-30T22:14:46.851068Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (0 ready, 0 open, 3 closed) into prompt
+[2m2026-03-30T22:16:15.408110Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T22:16:15.408163Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T22:16:15.408197Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T22:16:15.408208Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T22:16:15.408293Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (3732 chars) into prompt
+[2m2026-03-30T22:16:15.408517Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (0 ready, 0 open, 3 closed) into prompt
+[2m2026-03-30T22:16:46.376198Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T22:16:46.376349Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T22:16:46.376411Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T22:16:46.376444Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T22:16:46.376680Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (3732 chars) into prompt
+[2m2026-03-30T22:16:46.377215Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (1 ready, 1 open, 3 closed) into prompt
+[2m2026-03-30T22:22:22.462161Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T22:22:22.462504Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T22:22:22.462536Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T22:22:22.462550Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T22:22:22.462849Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (3732 chars) into prompt
+[2m2026-03-30T22:22:22.463457Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (0 ready, 1 open, 3 closed) into prompt
+[2m2026-03-30T22:27:00.012558Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory injection check: enabled=true, inject=Auto, workspace_root="/Users/ship/git/ast-search"
+[2m2026-03-30T22:27:00.012610Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Looking for memories at: "/Users/ship/git/ast-search/.ralph/agent/memories.md" (exists: false)
+[2m2026-03-30T22:27:00.012628Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Successfully loaded 0 memories from store
+[2m2026-03-30T22:27:00.012639Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Memory store is empty - no memories to inject
+[2m2026-03-30T22:27:00.012723Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting scratchpad (3732 chars) into prompt
+[2m2026-03-30T22:27:00.012971Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Injecting ready tasks (0 ready, 1 open, 3 closed) into prompt
+[2m2026-03-30T22:28:06.533735Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Completion event detected in JSONL [3mtopic[0m[2m=[0mLOOP_COMPLETE
+[2m2026-03-30T22:28:06.535747Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Completion event detected - terminating
+[2m2026-03-30T22:28:06.535869Z[0m [32m INFO[0m [2mralph::loop_runner[0m[2m:[0m Completion event LOOP_COMPLETE detected.
+[2m2026-03-30T22:28:06.535971Z[0m [32m INFO[0m [2mralph_core::event_loop[0m[2m:[0m Wrapping up: completed. 22 iterations in 39m 7s. [3mreason[0m[2m=[0mcompleted [3miterations[0m[2m=[0m22 [3mduration[0m[2m=[0m39m 7s
+[2m2026-03-30T22:28:06.579388Z[0m [32m INFO[0m [2mralph_core::landing[0m[2m:[0m Beginning landing sequence [3mloop_id[0m[2m=[0mprimary
+[2m2026-03-30T22:29:07.065782Z[0m [33m WARN[0m [2mralph_core::landing[0m[2m:[0m Auto-commit failed during landing [3mloop_id[0m[2m=[0mprimary [3merror[0m[2m=[0mGit command failed: Failed to commit: error: gpg failed to sign the data:
+[GNUPG:] KEY_CONSIDERED 8E9E1402E3C05ACA86883DFE6461A5EA53AA76B8 2
+[GNUPG:] BEGIN_SIGNING H8
+[GNUPG:] PINENTRY_LAUNCHED 62629 mac 1.3.1.1 /dev/ttys005 xterm-256color /private/tmp/com.apple.launchd.6Awg8CutqB/org.xquartz:0 20620/501/4 501/20 0
+gpg: signing failed: Operation cancelled
+[GNUPG:] FAILURE sign 83886179
+gpg: signing failed: Operation cancelled
+
+fatal: failed to write commit object
+
+[2m2026-03-30T22:29:08.544464Z[0m [32m INFO[0m [2mralph_core::landing[0m[2m:[0m Generated handoff file [3mloop_id[0m[2m=[0mprimary [3mpath[0m[2m=[0m/Users/ship/git/ast-search/.ralph/agent/handoff.md [3mcompleted[0m[2m=[0m6 [3mopen[0m[2m=[0m0
+[2m2026-03-30T22:29:08.557136Z[0m [32m INFO[0m [2mralph::loop_runner[0m[2m:[0m Primary loop landed successfully [3mcommitted[0m[2m=[0mfalse [3mhandoff[0m[2m=[0m/Users/ship/git/ast-search/.ralph/agent/handoff.md [3mopen_tasks[0m[2m=[0m0
