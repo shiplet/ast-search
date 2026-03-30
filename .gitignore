@@ -6,3 +6,4 @@ coverage/
 .agents
 .ralph
 PROMPT.md
+ralph.yml
