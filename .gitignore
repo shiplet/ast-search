@@ -4,3 +4,4 @@ ast-search
 build/
 coverage/
 .agents
+.ralph
