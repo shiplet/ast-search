@@ -1,4 +1,5 @@
 import { FileHandle, open } from "node:fs/promises";
+import { extname } from "node:path";
 import * as parser from "@babel/parser";
 import { File } from "@babel/types";
 
@@ -9,16 +10,19 @@ export function getAst(contents: string) {
   });
 }
 
-export async function parseVueSFC(lines: Buffer) {
+export const SCRIPT_OPEN = /^\s*<script(\s[^>]*)?\s*>/;
+export const SCRIPT_CLOSE = /^\s*<\/script>\s*/;
+
+export function parseVueSFC(lines: Buffer): string {
   const fileContents: string[] = [];
   let append = false;
   for (const line of lines.toString().split("\n")) {
-    if (line === "<script>") {
+    if (SCRIPT_OPEN.test(line)) {
       append = true;
       continue;
     }
 
-    if (line === "</script>") {
+    if (SCRIPT_CLOSE.test(line)) {
       append = false;
       break;
     }
@@ -31,9 +35,7 @@ export async function parseVueSFC(lines: Buffer) {
   return fileContents.join("\n");
 }
 
-export async function parseFile(lines: Buffer) {
-  return lines.toString();
-}
+const JS_EXTENSIONS = new Set([".js", ".ts", ".jsx", ".tsx", ".mjs", ".cjs"]);
 
 interface ParseReturn {
   ast: File;
@@ -43,16 +45,17 @@ interface ParseReturn {
 export async function getAstFromPath(path: string): Promise<ParseReturn> {
   const file = await open(path);
   const lines = await file.readFile();
-  let fileContents: string;
-  let ast: parser.ParseResult<any>;
+  const ext = extname(path);
 
-  fileContents = await parseVueSFC(lines);
-  if (fileContents) {
-    ast = getAst(fileContents);
+  let fileContents: string;
+  if (ext === ".vue") {
+    fileContents = parseVueSFC(lines);
+  } else if (JS_EXTENSIONS.has(ext)) {
+    fileContents = lines.toString();
   } else {
-    fileContents = await parseFile(lines);
-    ast = getAst(fileContents);
+    throw new Error(`Unsupported file extension: "${ext}" in path: ${path}`);
   }
 
+  const ast = getAst(fileContents);
   return { ast, file };
 }
