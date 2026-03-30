@@ -6,6 +6,7 @@ import {
   fsMock,
   fullVueSFC,
   reactComponent,
+  vue3SFC,
 } from "./setup";
 
 jest.mock("node:fs/promises", () => ({
@@ -25,7 +26,7 @@ describe("file", () => {
     const { open } = fsMock.promises;
     const file = await open(fullVueSFC);
     const lines = await file.readFile();
-    const contents = await parseVueSFC(lines as unknown as Buffer);
+    const contents = parseVueSFC(lines as unknown as Buffer);
     [
       "<template>",
       "</template>",
@@ -36,6 +37,26 @@ describe("file", () => {
     ].forEach((v) => {
       expect(contents.indexOf(v)).toBe(-1);
     });
+  });
+
+  test("it parses a Vue 3 SFC with <script setup lang='ts'>", async () => {
+    const { open } = fsMock.promises;
+    const file = await open(vue3SFC);
+    const lines = await file.readFile();
+    const contents = parseVueSFC(lines as unknown as Buffer);
+    ["<script setup lang=\"ts\">", "</script>", "<template>", "<style"].forEach(
+      (v) => {
+        expect(contents.indexOf(v)).toBe(-1);
+      },
+    );
+    expect(contents).toContain("greet");
+  });
+
+  test("it parses a Vue 3 SFC from path", async () => {
+    const { ast, file } = await getAstFromPath(vue3SFC);
+    expect(ast).toBeTruthy();
+    expect(file).not.toBeNull();
+    await file.close();
   });
 
   test("it parses a React component", async () => {

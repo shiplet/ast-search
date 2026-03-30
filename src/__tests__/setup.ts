@@ -1068,6 +1068,27 @@ export const ValidationsTab = () => {
 };
 `;
 /**
+ * Vue 3 SFC with <script setup lang="ts">
+ */
+export const vue3SFC = "/vue3SFC.vue";
+export const Vue3SFC: string = `<template>
+  <div>{{ message }}</div>
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+const message = ref("hello");
+function greet() {
+  console.log(message.value);
+}
+</script>
+
+<style scoped>
+div { color: red; }
+</style>
+`;
+
+/**
  * Mocked volume & fileSystem
  */
 export const volume = Volume.fromJSON({
@@ -1076,6 +1097,7 @@ export const volume = Volume.fromJSON({
   [fullVueSFC]: FullVueSFC,
   [jsBasics]: JSBasics,
   [reactComponent]: ReactComponent,
+  [vue3SFC]: Vue3SFC,
   [vueSFCOnlyJS]: VueSFCOnlyJS,
 });
 export const fsMock = createFsFromVolume(volume);
