@@ -1,3 +1,10 @@
+## ast-search-js [1.0.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.0.0...ast-search-js@1.0.1) (2026-03-31)
+
+
+### Bug Fixes
+
+* **web-tree-sitter:** swap tree-sitter for web-tree-sitter ([7cee980](https://github.com/willey-shiplet/ast-search/commit/7cee980c997ae04344afc198df6480414455ef7a))
+
 # ast-search-js 1.0.0 (2026-03-31)
 
 
