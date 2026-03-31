@@ -44,9 +44,11 @@ export const PYTHON_SHORTHANDS: Record<string, string> = {
 };
 
 export function expandShorthands(selector: string): string {
-  // Replace bare shorthand words (not inside quotes) with their S-expression.
+  // Replace bare shorthand words (not inside quotes and not preceded by @)
+  // with their S-expression. The negative lookbehind prevents expanding
+  // capture names like @fn into @(function_definition) @_.
   const keys = Object.keys(PYTHON_SHORTHANDS);
-  const pattern = new RegExp(`\\b(${keys.join("|")})\\b`, "g");
+  const pattern = new RegExp(`(?<!@)\\b(${keys.join("|")})\\b`, "g");
 
   const parts: string[] = [];
   let i = 0;
