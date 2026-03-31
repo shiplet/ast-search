@@ -1,5 +1,7 @@
 # ast-search
 
+test
+
 A (somewhat) limited-case search tool meant to facilitate large-scale refactors.
 
 Searches files for a given function or property name, and then determines whether those functions or properties contain a given expression or value.
