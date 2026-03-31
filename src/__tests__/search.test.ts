@@ -10,7 +10,6 @@ import {
 import { runQuery, expandShorthands, Match } from "../search";
 import { getAstFromPath } from "../file";
 import { FileHandle } from "node:fs/promises";
-import type { IFileHandle } from "@jsonjoy.com/fs-node-utils/lib/types/misc";
 import { File } from "@babel/types";
 
 jest.mock("node:fs/promises", () => ({
@@ -46,7 +45,7 @@ describe("expandShorthands", () => {
 
 describe("runQuery — type selectors", () => {
   let ast: File;
-  let file: FileHandle | IFileHandle;
+  let file: FileHandle;
   let source: string;
 
   afterEach(async () => {
@@ -87,7 +86,7 @@ describe("runQuery — type selectors", () => {
 
 describe("runQuery — attribute selectors", () => {
   let ast: File;
-  let file: FileHandle | IFileHandle;
+  let file: FileHandle;
   let source: string;
 
   afterEach(async () => {
@@ -137,7 +136,7 @@ describe("runQuery — attribute selectors", () => {
 
 describe("runQuery — :has() and :not() pseudo-selectors", () => {
   let ast: File;
-  let file: FileHandle | IFileHandle;
+  let file: FileHandle;
   let source: string;
 
   afterEach(async () => {
@@ -191,7 +190,7 @@ describe("runQuery — :has() and :not() pseudo-selectors", () => {
 
 describe("runQuery — descendant combinator", () => {
   let ast: File;
-  let file: FileHandle | IFileHandle;
+  let file: FileHandle;
   let source: string;
 
   afterEach(async () => {

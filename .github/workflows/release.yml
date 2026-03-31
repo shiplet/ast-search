@@ -1,42 +1,48 @@
 name: Release
+
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: read # for checkout
 
 jobs:
   release:
+    name: Release
     runs-on: ubuntu-latest
     permissions:
-      contents: write      # To push git tags and create GitHub releases
-      issues: write        # To comment on released issues
-      pull-requests: write # To comment on released PRs
-      id-token: write      # REQUIRED for npm Trusted Publishing
+      contents: write # to be able to publish a GitHub release
+      issues: write # to be able to comment on released issues
+      pull-requests: write # to be able to comment on released pull requests
+      id-token: write # to enable use of OIDC for npm provenance
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 22
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Upgrade npm
+          node-version-file: .nvmrc
+          registry-url: "https://registry.npmjs.org"
+      - name: Upgrade npm for trusted publishing
         run: npm install -g npm@latest && npm --version
-
-      - uses: pnpm/action-setup@v5
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
           run_install: false
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
+        run: pnpm i --frozen-lockfile
+      - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
+        run: pnpm audit --prod signatures
+      - name: Build
+        run: npx tsc
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
+
