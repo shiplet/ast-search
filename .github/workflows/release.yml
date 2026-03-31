@@ -54,11 +54,11 @@ jobs:
         run: pnpm audit --prod signatures
 
       - name: Build
-        run: npx tsc
+        run: npx tsc && pnpm --filter ast-search-python run build
 
       - name: Release
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: npx semantic-release
+        run: npx multi-semantic-release
 
