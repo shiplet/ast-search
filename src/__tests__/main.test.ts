@@ -1,5 +1,5 @@
 import { describe, expect, test } from "@jest/globals";
-import { fsMock, jsBasics, vueSFCOnlyJS } from "./setup";
+import { fsMock, vueSFCOnlyJS, reactListNoKey } from "./setup";
 import { searchRepo } from "../main.js";
 
 jest.mock("node:fs/promises", () => ({
@@ -13,49 +13,73 @@ jest.mock("node:fs/promises", () => ({
 }));
 
 describe("searchRepo", () => {
-  test("bare-ident: finds nodes by name across files", async () => {
-    const matches = await searchRepo("arrowFunction", "/");
+  test("type selector: finds FunctionDeclaration nodes across files", async () => {
+    const matches = await searchRepo("FunctionDeclaration", "/");
     expect(matches.length).toBeGreaterThan(0);
     expect(matches.every((m) => m.file !== "")).toBe(true);
   });
 
-  test("bare-expr: finds ThisExpression nodes", async () => {
-    const matches = await searchRepo("this", "/");
-    expect(matches.length).toBeGreaterThan(0);
-    expect(matches.every((m) => m.file !== "")).toBe(true);
+  test("shorthand: 'this' expands to ThisExpression", async () => {
+    const matches = await searchRepo("ThisExpression", "/");
+    const shorthandMatches = await searchRepo("this", "/");
+    expect(shorthandMatches.length).toBe(matches.length);
   });
 
-  test("scope query: finds expression inside named scope", async () => {
-    const matches = await searchRepo("setup > this", "/");
+  test("descendant combinator: finds this inside methods", async () => {
+    const matches = await searchRepo("ObjectMethod ThisExpression", "/");
     expect(matches.length).toBeGreaterThan(0);
     expect(matches.some((m) => m.file === vueSFCOnlyJS)).toBe(true);
   });
 
   test("returns empty array when nothing matches", async () => {
-    const matches = await searchRepo("__nonexistent_xyz_9999__", "/");
+    const matches = await searchRepo("DebuggerStatement", "/");
     expect(matches).toHaveLength(0);
   });
 
-  test("each match has file, line, col, and text fields", async () => {
-    const matches = await searchRepo("arrowFunction", "/");
+  test("each match has file, line, col, and source fields", async () => {
+    const matches = await searchRepo("FunctionDeclaration", "/");
     const m = matches[0];
     expect(typeof m.file).toBe("string");
     expect(typeof m.line).toBe("number");
     expect(typeof m.col).toBe("number");
-    expect(typeof m.text).toBe("string");
+    expect(typeof m.source).toBe("string");
+  });
+
+  test("match source contains the first line of the matched node", async () => {
+    const matches = await searchRepo("FunctionDeclaration", "/");
+    expect(matches[0].source).toBeTruthy();
+    expect(matches[0].source).not.toContain("\n");
   });
 
   test("skips files that fail to parse without throwing", async () => {
-    const matches = await searchRepo("this", "/");
+    const matches = await searchRepo("ThisExpression", "/");
     expect(Array.isArray(matches)).toBe(true);
   });
 
   test("match file paths are limited to the given dir", async () => {
-    const matches = await searchRepo("arrowFunction", "/");
+    const matches = await searchRepo("FunctionDeclaration", "/");
     expect(matches.every((m) => m.file.startsWith("/"))).toBe(true);
   });
 
-  test("rejects with Error on invalid query syntax", async () => {
-    await expect(searchRepo(">>> invalid", "/")).rejects.toThrow(Error);
+  test("attribute selector: finds .map() calls", async () => {
+    const matches = await searchRepo(
+      'CallExpression[callee.property.name="map"]',
+      "/",
+    );
+    expect(matches.length).toBeGreaterThan(0);
+    expect(matches.some((m) => m.file === reactListNoKey)).toBe(true);
+  });
+
+  test(":has() + :not(): target query finds map-without-key components", async () => {
+    const matches = await searchRepo(
+      'VariableDeclarator:has(CallExpression[callee.property.name="map"]):not(:has(JSXAttribute[name.name="key"]))',
+      "/",
+    );
+    expect(matches.some((m) => m.file === reactListNoKey)).toBe(true);
+    expect(matches.every((m) => !m.source.includes("ListWithKey"))).toBe(true);
+  });
+
+  test("throws on invalid selector syntax", async () => {
+    await expect(searchRepo(">>> invalid ::::", "/")).rejects.toThrow();
   });
 });

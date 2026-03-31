@@ -40,6 +40,7 @@ const JS_EXTENSIONS = new Set([".js", ".ts", ".jsx", ".tsx", ".mjs", ".cjs"]);
 interface ParseReturn {
   ast: File;
   file: FileHandle;
+  source: string;
 }
 
 export async function getAstFromPath(path: string): Promise<ParseReturn> {
@@ -57,5 +58,5 @@ export async function getAstFromPath(path: string): Promise<ParseReturn> {
   }
 
   const ast = getAst(fileContents);
-  return { ast, file };
+  return { ast, file, source: fileContents };
 }

@@ -1089,6 +1089,20 @@ div { color: red; }
 `;
 
 /**
+ * React list components — one with .map() missing key, one with key
+ */
+export const reactListNoKey = "/reactListNoKey.tsx";
+export const ReactListNoKey: string = `
+import React from "react";
+const ListNoKey = ({ items }) => (
+  <ul>{items.map(item => <li>{item.name}</li>)}</ul>
+);
+const ListWithKey = ({ items }) => (
+  <ul>{items.map(item => <li key={item.id}>{item.name}</li>)}</ul>
+);
+`;
+
+/**
  * Mocked volume & fileSystem
  */
 export const volume = Volume.fromJSON({
@@ -1097,6 +1111,7 @@ export const volume = Volume.fromJSON({
   [fullVueSFC]: FullVueSFC,
   [jsBasics]: JSBasics,
   [reactComponent]: ReactComponent,
+  [reactListNoKey]: ReactListNoKey,
   [vue3SFC]: Vue3SFC,
   [vueSFCOnlyJS]: VueSFCOnlyJS,
 });
