@@ -1,3 +1,10 @@
+## [0.2.4](https://github.com/willey-shiplet/ast-search/compare/v0.2.3...v0.2.4) (2026-03-31)
+
+
+### Bug Fixes
+
+* **AGENTS.md:** update with additional notes about normalized optional chaining ([672817c](https://github.com/willey-shiplet/ast-search/commit/672817c5941e1ee19e60fc9c947ea12d61b75d19))
+
 ## [0.2.3](https://github.com/willey-shiplet/ast-search/compare/v0.2.2...v0.2.3) (2026-03-31)
 
 
