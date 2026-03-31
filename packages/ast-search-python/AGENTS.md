@@ -158,8 +158,10 @@ const matches = await searchRepo('fn', './src');
 
 ## Gotchas
 
-- **Raw S-expressions without `@capture_name` return no results.** The shorthands include `@_` automatically; raw queries require you to add your own capture.
+- **Raw S-expressions without `@capture_name` return no results.** The shorthands include `@_` automatically; raw queries require you to add your own capture. A bare `(function_definition)` returns nothing; write `(function_definition) @fn` or just use the `fn` shorthand.
 - **`async def` functions are typed as `function_definition`** in tree-sitter-python 0.21+. There is no separate `async_function_definition` node. The `fn` shorthand matches both. To match only async, use a predicate query.
 - **Shorthands are not expanded inside quoted strings.** `'(call function: (identifier) @n (#eq? @n "fn"))'` keeps `"fn"` literal.
 - **Unparseable files are silently skipped.** Syntax errors in source files do not abort the search.
 - **`node_modules` is always excluded**, as are files/directories whose names start with `.`.
+- **Verify the AST structure before writing a query.** Python attribute chains like `self.client.send()` nest deeply — `self` is not the direct `object:` of the outer call; `self.client` is. If a predicate query returns no results, first remove the predicate and confirm the base pattern matches what you expect.
+- **`captures()` returns every named capture, not just the outermost.** A query like `(function_definition name: (identifier) @n) @fn` produces two matches per function: one for `@fn` (the whole definition) and one for `@n` (the name identifier). Filter by `source` or capture name if you only want one.
