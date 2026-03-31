@@ -2,6 +2,16 @@
 
 Python language plugin for [ast-search](../../README.md). Adds `.py` / `.pyw` file support using [tree-sitter](https://tree-sitter.github.io/tree-sitter/) S-expression queries.
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Example](#example)
+- [Query syntax](#query-syntax)
+  - [Shorthands](#shorthands)
+- [Supported file types](#supported-file-types)
+- [Plugin API](#plugin-api)
+
 ## Installation
 
 ```bash

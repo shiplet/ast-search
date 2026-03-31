@@ -4,6 +4,20 @@ A CLI tool for searching source files using AST patterns, designed to facilitate
 
 Accepts a query and searches all supported files under a directory, printing each match with its file path, line, and column. Language support is provided by plugins — the core handles JS/TS/Vue; additional languages are opt-in.
 
+## Table of Contents
+
+- [Example](#example)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Output formats](#output-formats)
+- [Query syntax](#query-syntax)
+  - [JavaScript / TypeScript / Vue](#javascript--typescript--vue)
+    - [Shorthands](#shorthands)
+    - [Optional chaining](#optional-chaining)
+  - [Python](#python)
+- [Supported file types](#supported-file-types)
+- [Plugin API](#plugin-api)
+
 ## Example
 
 Say you have Vue SFCs with `setup()` functions that improperly access `this`:
