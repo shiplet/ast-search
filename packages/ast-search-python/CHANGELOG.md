@@ -1,3 +1,10 @@
+## ast-search-python [1.0.2](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.1...ast-search-python@1.0.2) (2026-03-31)
+
+
+### Bug Fixes
+
+* **README:** give readme's table of contents ([7720ff9](https://github.com/willey-shiplet/ast-search/commit/7720ff98064944e21f42cc7167c1ea1667016024))
+
 ## ast-search-python [1.0.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.0...ast-search-python@1.0.1) (2026-03-31)
 
 
