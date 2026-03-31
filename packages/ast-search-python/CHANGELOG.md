@@ -1,3 +1,10 @@
+## ast-search-python [1.0.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.0...ast-search-python@1.0.1) (2026-03-31)
+
+
+### Bug Fixes
+
+* **README/AGENTS:** update README and AGENTS files in top-level & python ([626f5cc](https://github.com/willey-shiplet/ast-search/commit/626f5cc027f993986a57774a5689b77e3dc928da))
+
 # ast-search-python 1.0.0 (2026-03-31)
 
 
