@@ -1,3 +1,15 @@
+## ast-search-python [1.0.6](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.5...ast-search-python@1.0.6) (2026-03-31)
+
+
+### Bug Fixes
+
+* **CLI:** update cli with --agent-help command ([6a0856a](https://github.com/willey-shiplet/ast-search/commit/6a0856a36223c73f50cd93d85123cc02c2d56194))
+
+
+### Dependencies
+
+* **ast-search-js:** upgraded to 1.0.2
+
 ## ast-search-python [1.0.5](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.4...ast-search-python@1.0.5) (2026-03-31)
 
 
