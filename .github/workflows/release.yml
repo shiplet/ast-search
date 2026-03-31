@@ -13,7 +13,7 @@ jobs:
       id-token: write      # REQUIRED for npm Trusted Publishing
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
       - uses: actions/setup-node@v4
         with:
           node-version: 22  # npm Trusted Publishing requires Node >= 22.14.0
@@ -21,6 +21,9 @@ jobs:
 
       - name: Upgrade npm
         run: npm install -g npm@latest  # npm Trusted Publishing requires npm >= 11.5.1
+
+      - name: Check versions
+        run: node --version && npm --version
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
