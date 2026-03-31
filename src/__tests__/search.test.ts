@@ -10,7 +10,7 @@ import {
 import { runQuery, expandShorthands, Match } from "../search";
 import { getAstFromPath } from "../file";
 import { FileHandle } from "node:fs/promises";
-import { IFileHandle } from "memfs/lib/node/types/misc";
+import type { IFileHandle } from "@jsonjoy.com/fs-node-utils/lib/types/misc";
 import { File } from "@babel/types";
 
 jest.mock("node:fs/promises", () => ({
