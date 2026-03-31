@@ -75,6 +75,28 @@ const y = yargs(process.argv.slice(2))
       }
     },
   )
+  .example([
+    [
+      '$0 \'ObjectMethod[key.name="setup"] this\'',
+      "Vue: find setup() methods that use this",
+    ],
+    [
+      "$0 'await' --format files",
+      "list files containing await expressions",
+    ],
+    [
+      "$0 'call[callee.name=\"myFn\"]' --dir src",
+      "find all calls to myFn under src/",
+    ],
+    [
+      "$0 'VariableDeclarator:has(call[callee.property.name=\"map\"]):not(:has(JSXAttribute[name.name=\"key\"]))' --format json",
+      "React: .map() calls missing a key attribute, as JSON",
+    ],
+    [
+      "$0 'FunctionDeclaration[async=true]' --format files | xargs prettier --write",
+      "reformat all files containing async functions",
+    ],
+  ])
   .help();
 
 if (process.env.NODE_ENV !== "test") {
