@@ -3,11 +3,12 @@ import {
   fsMock,
   jsBasics,
   emptyFile,
+  optChainFixture,
   reactComponent,
   reactListNoKey,
   vueSFCOnlyJS,
 } from "./setup";
-import { runQuery, expandShorthands, Match } from "../search";
+import { runQuery, expandShorthands, normalizeOptionalChaining, Match } from "../search";
 import { getAstFromPath } from "../file";
 import { FileHandle } from "node:fs/promises";
 import { File } from "@babel/types";
@@ -209,5 +210,88 @@ describe("runQuery — descendant combinator", () => {
     const descendant = runQuery("VariableDeclaration Identifier", ast, source);
     const child = runQuery("VariableDeclaration > VariableDeclarator", ast, source);
     expect(descendant.length).toBeGreaterThanOrEqual(child.length);
+  });
+});
+
+describe("normalizeOptionalChaining", () => {
+  test("renames OptionalCallExpression to CallExpression", () => {
+    const node: any = { type: "OptionalCallExpression", optional: true };
+    normalizeOptionalChaining(node);
+    expect(node.type).toBe("CallExpression");
+    expect(node.optional).toBe(true);
+  });
+
+  test("renames OptionalMemberExpression to MemberExpression", () => {
+    const node: any = { type: "OptionalMemberExpression", optional: true };
+    normalizeOptionalChaining(node);
+    expect(node.type).toBe("MemberExpression");
+    expect(node.optional).toBe(true);
+  });
+
+  test("leaves regular node types unchanged", () => {
+    const node: any = { type: "CallExpression" };
+    normalizeOptionalChaining(node);
+    expect(node.type).toBe("CallExpression");
+  });
+});
+
+describe("runQuery — optional chaining", () => {
+  let ast: File;
+  let file: FileHandle;
+  let source: string;
+
+  afterEach(async () => {
+    await file.close();
+  });
+
+  test("CallExpression[callee.property.name] matches foo?.bar()", async () => {
+    ({ ast, file, source } = await getAstFromPath(optChainFixture));
+    const matches = runQuery(
+      'CallExpression[callee.property.name="bar"]',
+      ast,
+      source,
+      optChainFixture,
+    );
+    expect(matches.length).toBe(1);
+    expect(matches[0].source).toContain("foo?.bar()");
+  });
+
+  test("CallExpression[callee.property.name='map'] matches items?.map(...)", async () => {
+    ({ ast, file, source } = await getAstFromPath(optChainFixture));
+    const matches = runQuery(
+      'CallExpression[callee.property.name="map"]',
+      ast,
+      source,
+      optChainFixture,
+    );
+    // Both items?.map() and list?.filter().map() should match
+    expect(matches.length).toBe(2);
+    const sources = matches.map((m: Match) => m.source);
+    expect(sources.some((s: string) => s.includes("items?.map"))).toBe(true);
+    expect(sources.some((s: string) => s.includes("list?.filter"))).toBe(true);
+  });
+
+  test("optional flag is preserved on member expressions after normalization", async () => {
+    ({ ast, file, source } = await getAstFromPath(optChainFixture));
+    // In `foo?.bar()`, the ?. is on the MemberExpression (callee), not the call itself.
+    // After normalization OptionalMemberExpression → MemberExpression, [optional=true] still works.
+    const matches = runQuery(
+      "MemberExpression[optional=true]",
+      ast,
+      source,
+      optChainFixture,
+    );
+    expect(matches.length).toBeGreaterThan(0);
+  });
+
+  test("MemberExpression matches optional member access", async () => {
+    ({ ast, file, source } = await getAstFromPath(optChainFixture));
+    const matches = runQuery(
+      'MemberExpression[property.name="value"]',
+      ast,
+      source,
+      optChainFixture,
+    );
+    expect(matches.length).toBeGreaterThan(0);
   });
 });

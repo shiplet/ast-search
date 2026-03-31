@@ -63,6 +63,23 @@ export function validateSelector(selector: string): void {
   esquery.parse(expandShorthands(selector));
 }
 
+// Normalize Babel's optional-chain node types so esquery selectors like
+// CallExpression[callee.property.name="map"] transparently match optional
+// chains (foo?.bar()). The `optional` flag is preserved, so callers can
+// still narrow to optional-only with [optional=true] or [callee.optional=true].
+export function normalizeOptionalChaining(node: any): void {
+  if (!node || typeof node !== "object") return;
+  // Capture visitor keys before renaming so we use the original type's keys.
+  const keys = (VISITOR_KEYS as any)[node.type] ?? [];
+  if (node.type === "OptionalCallExpression") node.type = "CallExpression";
+  else if (node.type === "OptionalMemberExpression") node.type = "MemberExpression";
+  for (const key of keys) {
+    const child = node[key];
+    if (Array.isArray(child)) child.forEach(normalizeOptionalChaining);
+    else normalizeOptionalChaining(child);
+  }
+}
+
 export function runQuery(
   selector: string,
   ast: File,
@@ -70,6 +87,7 @@ export function runQuery(
   filename = "",
 ): Match[] {
   const expanded = expandShorthands(selector);
+  normalizeOptionalChaining(ast);
   // Cast to any: esquery expects estree.Node but Babel AST is structurally
   // compatible; VISITOR_KEYS ensures correct traversal of Babel-specific nodes.
   const nodes = esquery.query(ast as any, expanded, {

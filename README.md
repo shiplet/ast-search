@@ -92,6 +92,21 @@ The original Vue `this` example using shorthands:
 ast-search 'ObjectMethod[key.name="setup"] this'
 ```
 
+### Optional chaining
+
+Optional chains (`?.`) are normalized transparently — `CallExpression` and `MemberExpression` selectors match both regular and optional-chain variants:
+
+```bash
+# Matches both items.map(...) and items?.map(...)
+ast-search 'CallExpression[callee.property.name="map"]'
+```
+
+The `optional` flag is preserved on matched nodes, so you can still narrow to strictly optional calls:
+
+```bash
+ast-search 'CallExpression[optional=true]'
+```
+
 ## Supported file types
 
 `.js`, `.ts`, `.jsx`, `.tsx`, `.mjs`, `.cjs`, `.vue`

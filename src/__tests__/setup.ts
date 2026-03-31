@@ -1089,6 +1089,17 @@ div { color: red; }
 `;
 
 /**
+ * Optional chaining fixture
+ */
+export const optChainFixture = "/optChain.ts";
+export const OptChainFixture: string = `
+const a = foo?.bar();
+const b = items?.map(x => x.name);
+const c = list?.filter(Boolean).map(item => item.id);
+const d = obj?.nested?.value;
+`;
+
+/**
  * React list components — one with .map() missing key, one with key
  */
 export const reactListNoKey = "/reactListNoKey.tsx";
@@ -1110,6 +1121,7 @@ export const volume = Volume.fromJSON({
   [emptyFile]: EmptyFile,
   [fullVueSFC]: FullVueSFC,
   [jsBasics]: JSBasics,
+  [optChainFixture]: OptChainFixture,
   [reactComponent]: ReactComponent,
   [reactListNoKey]: ReactListNoKey,
   [vue3SFC]: Vue3SFC,

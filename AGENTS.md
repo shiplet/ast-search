@@ -114,7 +114,7 @@ ast-search 'ObjectMethod this'
 ast-search 'VariableDeclarator:has(CallExpression[callee.property.name="map"]):not(:has(JSXAttribute[name.name="key"]))'
 ```
 
-### React: find all `.map()` calls
+### React: find all `.map()` calls (including optional-chain variants like `items?.map(...)`)
 ```bash
 ast-search 'CallExpression[callee.property.name="map"]'
 ```
@@ -203,6 +203,7 @@ const matches = await searchRepo(selector, dir);
 
 ## Gotchas
 
+- **Optional chaining is normalized transparently.** `foo?.bar()` and `foo?.bar` match `CallExpression` and `MemberExpression` selectors respectively — no need for separate queries. The `optional` flag is preserved, so `[optional=true]` still narrows to strictly optional-chain nodes.
 - **Unparseable files are silently skipped.** Syntax errors in source files do not abort the search; that file simply yields no matches.
 - **`node_modules` is always excluded.** So are any files/directories whose names start with `.`.
 - **`col` is 0-indexed.** `line` is 1-indexed. Match this when cross-referencing editor output.
