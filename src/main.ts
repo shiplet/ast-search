@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 import yargs from "yargs/yargs";
+import { createRequire } from "module";
 import { walkRepoFiles } from "./walk.js";
 import { getAstFromPath } from "./file.js";
 import { runQuery, validateSelector, Match } from "./search.js";
 import { formatMatches, OutputFormat } from "./output.js";
+
+const require = createRequire(import.meta.url);
+const { version } = require("../package.json") as { version: string };
 
 export async function searchRepo(
   selector: string,
@@ -97,6 +101,8 @@ const y = yargs(process.argv.slice(2))
       "reformat all files containing async functions",
     ],
   ])
+  .version(version)
+  .alias("version", "V")
   .help();
 
 if (process.env.NODE_ENV !== "test") {

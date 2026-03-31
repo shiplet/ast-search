@@ -1,6 +1,6 @@
 {
   "name": "ast-search",
-  "version": "1.0.0",
+  "version": "0.2.2",
   "description": "",
   "main": "main.js",
   "scripts": {
@@ -22,7 +22,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shiplet/ast-search.git"
+    "url": "https://github.com/willey-shiplet/ast-search.git"
   },
   "packageManager": "pnpm@10.33.0",
   "dependencies": {

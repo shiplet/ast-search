@@ -12,6 +12,7 @@ permissions:
 jobs:
   release:
     name: Release
+    if: github.actor != 'willey-shiplet-releaser[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: write # to be able to publish a GitHub release
@@ -19,30 +20,45 @@ jobs:
       pull-requests: write # to be able to comment on released pull requests
       id-token: write # to enable use of OIDC for npm provenance
     steps:
+      - name: Generate Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          token: ${{ steps.app-token.outputs.token}}
           fetch-depth: 0
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           registry-url: "https://registry.npmjs.org"
+
       - name: Upgrade npm for trusted publishing
         run: npm install -g npm@latest && npm --version
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           run_install: false
+
       - name: Install dependencies
         run: pnpm i --frozen-lockfile
+
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
         run: pnpm audit --prod signatures
+
       - name: Build
         run: npx tsc
+
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: npx semantic-release
 
