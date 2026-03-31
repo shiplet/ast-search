@@ -120,61 +120,15 @@ The `optional` flag is preserved on matched nodes, so you can still narrow to st
 ast-search 'CallExpression[optional=true]'
 ```
 
-### Python (via `ast-search-python`)
+### Python
 
-Python queries use [tree-sitter](https://tree-sitter.github.io/tree-sitter/) S-expression syntax. Install the plugin first:
-
-```bash
-npm install -g ast-search-python
-```
-
-Then pass `--plugin ast-search-python` to enable `.py` / `.pyw` file support:
-
-```bash
-# Find all function definitions (shorthand)
-ast-search 'fn' --plugin ast-search-python
-
-# Find all class definitions (raw S-expression)
-ast-search '(class_definition) @cls' --plugin ast-search-python
-
-# Find all calls to a specific function by name
-ast-search '(call function: (identifier) @n (#eq? @n "my_func")) @c' --plugin ast-search-python
-
-# Restrict to only Python files in a mixed-language repo
-ast-search 'fn' --lang python --plugin ast-search-python
-```
-
-#### Python shorthands
-
-| Shorthand   | Expands to                          |
-| ----------- | ----------------------------------- |
-| `fn`        | `(function_definition) @_`          |
-| `call`      | `(call) @_`                         |
-| `class`     | `(class_definition) @_`             |
-| `assign`    | `(assignment) @_`                   |
-| `return`    | `(return_statement) @_`             |
-| `await`     | `(await) @_`                        |
-| `yield`     | `(yield) @_`                        |
-| `import`    | `(import_statement) @_`             |
-| `from`      | `(import_from_statement) @_`        |
-| `if`        | `(if_statement) @_`                 |
-| `for`       | `(for_statement) @_`                |
-| `while`     | `(while_statement) @_`              |
-| `raise`     | `(raise_statement) @_`              |
-| `with`      | `(with_statement) @_`               |
-| `lambda`    | `(lambda) @_`                       |
-| `decorator` | `(decorator) @_`                    |
-| `augassign` | `(augmented_assignment) @_`         |
-
-For raw S-expression queries, include at least one `@capture_name` — tree-sitter's `captures()` requires it to return results.
-
-> **Note:** In tree-sitter-python 0.21+, `async def` functions are still typed as `function_definition` (no separate `async_function_definition` node). To match only async functions, use a full predicate query.
+For Python support, see [ast-search-python](packages/ast-search-python/README.md).
 
 ## Supported file types
 
 **Core:** `.js` `.ts` `.jsx` `.tsx` `.mjs` `.cjs` `.vue`
 
-**With `ast-search-python`:** `.py` `.pyw`
+**Via plugin:** see [ast-search-python](packages/ast-search-python/README.md) for `.py` / `.pyw` support.
 
 ## Plugin API
 

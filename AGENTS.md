@@ -2,7 +2,7 @@
 
 Use this tool to locate AST patterns across a codebase before making edits. It is most valuable when you need to find all call sites, detect anti-patterns at scale, or scope a refactor before touching files.
 
-Language support is plugin-based. The core handles JS/TS/Vue. Python support requires `--plugin ast-search-python`.
+Language support is plugin-based. The core handles JS/TS/Vue. For Python support, see [ast-search-python](packages/ast-search-python/AGENTS.md).
 
 ---
 
@@ -61,52 +61,6 @@ NodeType:has(OtherType)                   # contains a matching descendant
 NodeType:not(OtherType)                   # excludes nodes matching selector
 :has(...):not(...)                        # combinable
 ```
-
----
-
-## Python Query Syntax
-
-Python requires `--plugin ast-search-python`. Queries use [tree-sitter](https://tree-sitter.github.io/tree-sitter/) S-expression syntax.
-
-```bash
-ast-search 'fn' --plugin ast-search-python
-ast-search '(class_definition) @cls' --plugin ast-search-python
-```
-
-### Python shorthands
-
-| Shorthand | Expands to |
-|-----------|-----------|
-| `fn` | `(function_definition) @_` |
-| `call` | `(call) @_` |
-| `class` | `(class_definition) @_` |
-| `assign` | `(assignment) @_` |
-| `return` | `(return_statement) @_` |
-| `await` | `(await) @_` |
-| `yield` | `(yield) @_` |
-| `import` | `(import_statement) @_` |
-| `from` | `(import_from_statement) @_` |
-| `if` | `(if_statement) @_` |
-| `for` | `(for_statement) @_` |
-| `while` | `(while_statement) @_` |
-| `raise` | `(raise_statement) @_` |
-| `with` | `(with_statement) @_` |
-| `lambda` | `(lambda) @_` |
-| `decorator` | `(decorator) @_` |
-| `augassign` | `(augmented_assignment) @_` |
-
-### Raw S-expression patterns
-
-Tree-sitter S-expressions require at least one `@capture_name` to return results via `captures()`.
-
-```
-(node_type) @name                             # match by type
-(node_type field: (child_type) @c) @n         # field access
-(node_type) @n (#eq? @n "value")              # predicate: text equality
-(node_type) @n (#match? @n "regex")           # predicate: regex match
-```
-
-**Note:** `async def` functions are typed as `function_definition` in tree-sitter-python 0.21+ (no separate `async_function_definition` node). The `fn` shorthand matches both sync and async functions.
 
 ---
 
@@ -223,51 +177,6 @@ ast-search 'JSXOpeningElement[name.name="MyComponent"]'
 
 ---
 
-## Python Refactoring Patterns
-
-### Find all function definitions
-```bash
-ast-search 'fn' --plugin ast-search-python
-```
-
-### Find all class definitions
-```bash
-ast-search 'class' --plugin ast-search-python
-```
-
-### Find all imports (including `from X import Y`)
-```bash
-ast-search 'import' --plugin ast-search-python
-ast-search 'from' --plugin ast-search-python
-```
-
-### Find calls to a specific function by name
-```bash
-ast-search '(call function: (identifier) @n (#eq? @n "my_func")) @c' --plugin ast-search-python
-```
-
-### Find all decorators
-```bash
-ast-search 'decorator' --plugin ast-search-python
-```
-
-### Find all `raise` statements
-```bash
-ast-search 'raise' --plugin ast-search-python
-```
-
-### Find all list comprehensions
-```bash
-ast-search 'comp' --plugin ast-search-python
-```
-
-### Restrict to Python files only in a mixed-language repo
-```bash
-ast-search 'fn' --lang python --plugin ast-search-python
-```
-
----
-
 ## Composing with Shell Tools
 
 Get all files with `await` expressions and process them:
@@ -312,7 +221,7 @@ const matches = await searchRepo(selector, dir);
 
 **Core:** `.js` `.ts` `.jsx` `.tsx` `.mjs` `.cjs` `.vue`
 
-**With `ast-search-python`:** `.py` `.pyw`
+**Via plugin:** see [ast-search-python](packages/ast-search-python/AGENTS.md) for `.py` / `.pyw` support.
 
 **Vue SFCs:** Only the `<script>` block is parsed. Supports `<script>`, `<script setup>`, `<script lang="ts">`, `<script setup lang="ts">`. Template and style blocks are ignored.
 
@@ -326,5 +235,4 @@ const matches = await searchRepo(selector, dir);
 - **`col` is 0-indexed.** `line` is 1-indexed. Match this when cross-referencing editor output.
 - **`source` is the first line only**, trimmed. Multi-line nodes (e.g., a full function body) are truncated. Use `--format json` and the `file`/`line`/`col` fields to locate the full node.
 - **JS shorthands expand globally** outside quoted strings. Avoid bare shorthand keywords like `new` or `this` in unquoted attribute values — quote them: `[callee.name="this"]`.
-- **Python queries without `@capture_name`** will return no results. The shorthands include `@_` automatically; raw S-expressions require you to add your own capture.
-- **Early selector validation** only runs when a single backend is active (either only core is installed, or `--lang` is specified). In mixed-language mode, invalid selectors surface as no matches rather than an error at startup.
+- **Early selector validation** only runs when a single backend is active (either only core is loaded, or `--lang` is specified). In mixed-language mode, invalid selectors surface as no matches rather than an error at startup.
