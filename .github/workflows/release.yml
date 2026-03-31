@@ -1,30 +1,27 @@
 name: Release
-
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-      id-token: write
+      contents: write # To push git tags and create GitHub releases
+      issues: write   # To comment on released issues
+      pull-requests: write # To comment on released PRs
+      id-token: write # REQUIRED for Trusted Publishing
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: npm test
-      - run: npx semantic-release
+          node-version: 'lts/*'
+      
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Note: NO NPM_TOKEN IS NEEDED HERE!
+        run: npx semantic-release

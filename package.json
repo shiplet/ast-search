@@ -13,6 +13,10 @@
     "build": "npx tsc && cp build/main.js ast-search",
     "prepublishOnly": "npx tsc && npm test"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "type": "module",
   "author": "",
   "license": "ISC",
