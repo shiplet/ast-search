@@ -1,0 +1,50 @@
+{
+  "name": "ast-search-python",
+  "version": "0.1.0",
+  "description": "Python language plugin for ast-search",
+  "type": "module",
+  "main": "./build/index.js",
+  "exports": {
+    ".": {
+      "import": "./build/index.js",
+      "types": "./build/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "prepublishOnly": "tsc"
+  },
+  "author": "shiplet",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/willey-shiplet/ast-search.git",
+    "directory": "packages/ast-search-python"
+  },
+  "files": [
+    "build/*.js",
+    "build/*.d.ts",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-python": "^0.21.0"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.12.7",
+    "ast-search": "workspace:*",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "ast-search": ">=0.3.0"
+  }
+}

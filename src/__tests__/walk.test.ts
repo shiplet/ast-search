@@ -23,6 +23,8 @@ jest.mock("node:fs/promises", () => ({
   }),
 }));
 
+const JS_EXTENSIONS = new Set([".js", ".ts", ".jsx", ".tsx", ".mjs", ".cjs", ".vue"]);
+
 async function collect(gen: AsyncIterable<string>): Promise<string[]> {
   const result: string[] = [];
   for await (const item of gen) {
@@ -33,7 +35,7 @@ async function collect(gen: AsyncIterable<string>): Promise<string[]> {
 
 describe("walkRepoFiles", () => {
   test("yields supported JS/TS/Vue extensions", async () => {
-    const files = await collect(walkRepoFiles("/repo/src"));
+    const files = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS));
     expect(files).toContain("/repo/src/index.ts");
     expect(files).toContain("/repo/src/utils/helper.js");
     expect(files).toContain("/repo/src/mjs/mod.mjs");
@@ -43,27 +45,27 @@ describe("walkRepoFiles", () => {
   });
 
   test("excludes unsupported extensions", async () => {
-    const files = await collect(walkRepoFiles("/repo/src"));
+    const files = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS));
     expect(files).not.toContain("/repo/src/styles/main.css");
   });
 
   test("recurses into subdirectories", async () => {
-    const files = await collect(walkRepoFiles("/repo/src"));
+    const files = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS));
     expect(files).toContain("/repo/src/components/Button.tsx");
   });
 
   test("excludes node_modules", async () => {
-    const files = await collect(walkRepoFiles("/repo"));
+    const files = await collect(walkRepoFiles("/repo", JS_EXTENSIONS));
     expect(files.some((f) => f.includes("node_modules"))).toBe(false);
   });
 
   test("excludes hidden directories (dot-prefixed)", async () => {
-    const files = await collect(walkRepoFiles("/repo"));
+    const files = await collect(walkRepoFiles("/repo", JS_EXTENSIONS));
     expect(files.some((f) => f.includes(".hidden"))).toBe(false);
   });
 
   test("returns no files for directory with only non-matching entries", async () => {
-    const files = await collect(walkRepoFiles("/repo/src/empty"));
+    const files = await collect(walkRepoFiles("/repo/src/empty", JS_EXTENSIONS));
     expect(files).toHaveLength(0);
   });
 });

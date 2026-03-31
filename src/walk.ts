@@ -1,17 +1,10 @@
 import { readdir } from "node:fs/promises";
 import { extname, join } from "node:path";
 
-const SUPPORTED_EXTENSIONS = new Set([
-  ".js",
-  ".ts",
-  ".jsx",
-  ".tsx",
-  ".mjs",
-  ".cjs",
-  ".vue",
-]);
-
-export async function* walkRepoFiles(dir: string): AsyncGenerator<string> {
+export async function* walkRepoFiles(
+  dir: string,
+  extensions: ReadonlySet<string>,
+): AsyncGenerator<string> {
   const entries = await readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
     if (entry.name.startsWith(".")) continue;
@@ -19,8 +12,8 @@ export async function* walkRepoFiles(dir: string): AsyncGenerator<string> {
 
     const fullPath = join(dir, entry.name);
     if (entry.isDirectory()) {
-      yield* walkRepoFiles(fullPath);
-    } else if (entry.isFile() && SUPPORTED_EXTENSIONS.has(extname(entry.name))) {
+      yield* walkRepoFiles(fullPath, extensions);
+    } else if (entry.isFile() && extensions.has(extname(entry.name))) {
       yield fullPath;
     }
   }

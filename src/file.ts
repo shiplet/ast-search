@@ -2,6 +2,8 @@ import { FileHandle, open } from "node:fs/promises";
 import { extname } from "node:path";
 import * as parser from "@babel/parser";
 import { File } from "@babel/types";
+import type { LanguageBackend } from "./language.js";
+import type { LanguageRegistry } from "./registry.js";
 
 export function getAst(contents: string) {
   return parser.parse(contents, {
@@ -59,4 +61,29 @@ export async function getAstFromPath(path: string): Promise<ParseReturn> {
 
   const ast = getAst(fileContents);
   return { ast, file, source: fileContents };
+}
+
+export interface ParsedFile {
+  ast: unknown;
+  source: string;
+  backend: LanguageBackend;
+}
+
+export async function parseFile(
+  path: string,
+  registry: LanguageRegistry,
+): Promise<ParsedFile> {
+  const ext = extname(path);
+  const backend = registry.getByExtension(ext);
+  if (!backend) {
+    throw new Error(`No backend registered for extension "${ext}"`);
+  }
+  const file = await open(path);
+  try {
+    const source = (await file.readFile()).toString();
+    const ast = await backend.parse(source, path);
+    return { ast, source, backend };
+  } finally {
+    await file.close();
+  }
 }

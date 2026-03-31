@@ -1,32 +1,34 @@
 #!/usr/bin/env node
 import yargs from "yargs/yargs";
-import { createRequire } from "module";
 import { walkRepoFiles } from "./walk.js";
-import { getAstFromPath } from "./file.js";
-import { runQuery, validateSelector, Match } from "./search.js";
+import { parseFile } from "./file.js";
+import type { Match } from "./types.js";
 import { formatMatches, OutputFormat } from "./output.js";
+import { defaultRegistry } from "./registry.js";
+import { JSLanguageBackend } from "./backends/js/index.js";
+import { VERSION } from "./version.js";
 
-const require = createRequire(import.meta.url);
-const { version } = require("../package.json") as { version: string };
+// Register built-in JS/TS/Vue backend
+defaultRegistry.register(new JSLanguageBackend());
 
 export async function searchRepo(
   selector: string,
   dir: string,
+  registry = defaultRegistry,
 ): Promise<Match[]> {
-  validateSelector(selector); // throws early on invalid selector syntax
-  const results: Match[] = [];
+  // Early validation when only one backend is registered (common JS-only case)
+  if (registry.allBackends.length === 1) {
+    registry.allBackends[0].validateSelector(selector);
+  }
 
-  for await (const filePath of walkRepoFiles(dir)) {
-    let file: Awaited<ReturnType<typeof getAstFromPath>>["file"] | undefined;
+  const results: Match[] = [];
+  for await (const filePath of walkRepoFiles(dir, registry.allExtensions)) {
     try {
-      const result = await getAstFromPath(filePath);
-      file = result.file;
-      const matches = runQuery(selector, result.ast, result.source, filePath);
+      const { ast, source, backend } = await parseFile(filePath, registry);
+      const matches = backend.query(ast, selector, source, filePath);
       results.push(...matches);
     } catch {
-      // skip unparseable files
-    } finally {
-      await file?.close();
+      // skip unparseable files / unsupported extensions
     }
   }
 
@@ -43,7 +45,7 @@ const y = yargs(process.argv.slice(2))
       yargs
         .positional("query", {
           type: "string",
-          describe: "esquery CSS selector string",
+          describe: "Query string (esquery CSS selector for JS/TS; tree-sitter S-expression for Python)",
           demandOption: true,
         })
         .option("dir", {
@@ -58,15 +60,55 @@ const y = yargs(process.argv.slice(2))
           describe: "output format: text (default), json, files",
           default: "text",
           choices: ["text", "json", "files"],
+        })
+        .option("lang", {
+          alias: "l",
+          type: "string",
+          describe: "restrict search to a specific language backend by langId (e.g. js, python)",
+        })
+        .option("plugin", {
+          alias: "p",
+          type: "string",
+          array: true,
+          describe: "load a language plugin package (e.g. ast-search-python)",
         }),
     async (argv) => {
-      const { query, dir, format } = argv as {
+      const { query, dir, format, lang, plugin } = argv as {
         query: string;
         dir: string;
         format: OutputFormat;
+        lang?: string;
+        plugin?: string[];
       };
+
       try {
-        const matches = await searchRepo(query, dir);
+        // Load plugins before searching
+        for (const pkg of plugin ?? []) {
+          const mod = await import(pkg) as { register?: (r: typeof defaultRegistry) => void; default?: { register?: (r: typeof defaultRegistry) => void } };
+          const reg = mod.register ?? mod.default?.register;
+          if (typeof reg !== "function") {
+            throw new Error(`Plugin "${pkg}" does not export a register() function`);
+          }
+          reg(defaultRegistry);
+        }
+
+        // Build a scoped registry if --lang is specified
+        let registry = defaultRegistry;
+        if (lang) {
+          const backend = defaultRegistry.getByLangId(lang);
+          if (!backend) {
+            const available = defaultRegistry.allBackends.map((b) => b.langId).join(", ");
+            throw new Error(`Unknown language "${lang}". Available: ${available}`);
+          }
+          const { LanguageRegistry } = await import("./registry.js");
+          const scoped = new LanguageRegistry();
+          scoped.register(backend);
+          registry = scoped;
+          // Always validate early when --lang restricts to a single backend
+          backend.validateSelector(query);
+        }
+
+        const matches = await searchRepo(query, dir, registry);
         const isTTY = process.stdout.isTTY ?? false;
         for (const line of formatMatches(matches, isTTY, format)) {
           console.log(line);
@@ -100,8 +142,16 @@ const y = yargs(process.argv.slice(2))
       "$0 'FunctionDeclaration[async=true]' --format files | xargs prettier --write",
       "reformat all files containing async functions",
     ],
+    [
+      "$0 'fn' --dir src --plugin ast-search-python",
+      "find all function definitions in Python files",
+    ],
+    [
+      "$0 '(class_definition)' --lang python --plugin ast-search-python",
+      "find all Python classes (tree-sitter S-expression syntax)",
+    ],
   ])
-  .version(version)
+  .version(VERSION)
   .alias("version", "V")
   .help();
 

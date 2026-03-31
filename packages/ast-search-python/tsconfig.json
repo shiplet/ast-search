@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "lib": ["es2020"],
+    "module": "esnext",
+    "rootDir": "src",
+    "outDir": "build",
+    "esModuleInterop": true,
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noImplicitAny": false,
+    "declaration": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts"]
+}
