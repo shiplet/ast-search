@@ -1,3 +1,10 @@
+# ast-search-js 1.0.0 (2026-03-31)
+
+
+### Bug Fixes
+
+* **packages:** separate release packages ([df40b12](https://github.com/willey-shiplet/ast-search/commit/df40b12ab3b066b436a5962e294d08476e6002dd))
+
 # [0.3.0](https://github.com/willey-shiplet/ast-search/compare/v0.2.4...v0.3.0) (2026-03-31)
 
 
