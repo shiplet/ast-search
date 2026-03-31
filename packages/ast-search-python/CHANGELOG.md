@@ -1,3 +1,15 @@
+## ast-search-python [1.0.4](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.3...ast-search-python@1.0.4) (2026-03-31)
+
+
+### Bug Fixes
+
+* **web-tree-sitter:** swap tree-sitter for web-tree-sitter ([7cee980](https://github.com/willey-shiplet/ast-search/commit/7cee980c997ae04344afc198df6480414455ef7a))
+
+
+### Dependencies
+
+* **ast-search-js:** upgraded to 1.0.1
+
 ## ast-search-python [1.0.3](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.2...ast-search-python@1.0.3) (2026-03-31)
 
 
