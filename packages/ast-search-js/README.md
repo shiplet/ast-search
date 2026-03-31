@@ -1,4 +1,4 @@
-# ast-search
+# ast-search-js
 
 A CLI tool for searching source files using AST patterns, designed to facilitate large-scale refactors.
 
@@ -48,7 +48,7 @@ src/components/Bar.vue:9:18: return this.otherProp
 ## Installation
 
 ```bash
-npm install -g ast-search
+npm install -g ast-search-js
 
 # Optional: add Python support
 npm install -g ast-search-python
@@ -136,13 +136,13 @@ ast-search 'CallExpression[optional=true]'
 
 ### Python
 
-For Python support, see [ast-search-python](packages/ast-search-python/README.md).
+For Python support, see [ast-search-python](../ast-search-python/README.md).
 
 ## Supported file types
 
 **Core:** `.js` `.ts` `.jsx` `.tsx` `.mjs` `.cjs` `.vue`
 
-**Via plugin:** see [ast-search-python](packages/ast-search-python/README.md) for `.py` / `.pyw` support.
+**Via plugin:** see [ast-search-python](../ast-search-python/README.md) for `.py` / `.pyw` support.
 
 ## Plugin API
 

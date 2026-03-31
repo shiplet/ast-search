@@ -1,6 +1,6 @@
 # ast-search-python
 
-Python language plugin for [ast-search](../../README.md). Adds `.py` / `.pyw` file support using [tree-sitter](https://tree-sitter.github.io/tree-sitter/) S-expression queries.
+Python language plugin for [ast-search-js](../ast-search-js/README.md). Adds `.py` / `.pyw` file support using [tree-sitter](https://tree-sitter.github.io/tree-sitter/) S-expression queries.
 
 ## Table of Contents
 
@@ -15,7 +15,7 @@ Python language plugin for [ast-search](../../README.md). Adds `.py` / `.pyw` fi
 ## Installation
 
 ```bash
-npm install -g ast-search
+npm install -g ast-search-js
 npm install -g ast-search-python
 ```
 
@@ -108,10 +108,10 @@ Raw S-expression queries must include at least one `@capture_name` — tree-sitt
 
 ## Plugin API
 
-This package implements the `LanguageBackend` interface from `ast-search/plugin`. It registers the `python` language backend automatically when loaded via `--plugin ast-search-python`, or programmatically:
+This package implements the `LanguageBackend` interface from `ast-search-js/plugin`. It registers the `python` language backend automatically when loaded via `--plugin ast-search-python`, or programmatically:
 
 ```typescript
-import { defaultRegistry } from 'ast-search/plugin';
+import { defaultRegistry } from 'ast-search-js/plugin';
 const { register } = await import('ast-search-python');
 register(defaultRegistry);
 ```

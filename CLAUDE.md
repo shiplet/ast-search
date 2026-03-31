@@ -4,6 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
+Run from `packages/ast-search-js/`:
+
 ```bash
 npm test                  # run all tests with coverage
 npx tsc                   # compile TypeScript to build/

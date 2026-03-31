@@ -1,6 +1,6 @@
 import { describe, expect, test } from "@jest/globals";
 import { PythonLanguageBackend, register } from "../index.js";
-import { LanguageRegistry } from "ast-search/plugin";
+import { LanguageRegistry } from "ast-search-js/plugin";
 
 const backend = new PythonLanguageBackend();
 

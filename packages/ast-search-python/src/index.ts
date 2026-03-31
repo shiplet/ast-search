@@ -1,5 +1,5 @@
 import { createRequire } from "module";
-import type { LanguageBackend, LanguageRegistry, Match } from "ast-search/plugin";
+import type { LanguageBackend, LanguageRegistry, Match } from "ast-search-js/plugin";
 import { expandShorthands } from "./shorthands.js";
 import { runTreeSitterQuery, validateTreeSitterQuery } from "./query.js";
 

@@ -1,4 +1,4 @@
-import type { Match } from "ast-search/plugin";
+import type { Match } from "ast-search-js/plugin";
 
 // tree-sitter types (minimal surface we use, compatible with v0.21+)
 interface TSNode {
