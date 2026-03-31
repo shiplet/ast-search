@@ -8,3 +8,4 @@ coverage/
 PROMPT.md
 ralph.yml
 *.swp
+.idea
