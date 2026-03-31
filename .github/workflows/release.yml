@@ -2,6 +2,10 @@ name: Release
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   release:
@@ -13,17 +17,20 @@ jobs:
       id-token: write      # REQUIRED for npm Trusted Publishing
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v5
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 22  # npm Trusted Publishing requires Node >= 22.14.0
-          cache: 'pnpm'
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Upgrade npm
-        run: npm install -g npm@latest  # npm Trusted Publishing requires npm >= 11.5.1
+        run: npm install -g npm@latest && npm --version
 
-      - name: Check versions
-        run: node --version && npm --version
+      - uses: pnpm/action-setup@v5
+        with:
+          run_install: false
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -31,5 +38,4 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ''
         run: npx semantic-release
