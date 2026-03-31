@@ -1,13 +1,9 @@
 import esquery from "esquery";
 import { VISITOR_KEYS } from "@babel/types";
 import type { File, Node } from "@babel/types";
+import type { Match } from "./types.js";
 
-export interface Match {
-  file: string;
-  line: number;
-  col: number;
-  source: string;
-}
+export type { Match };
 
 export const SHORTHANDS: Record<string, string> = {
   this: "ThisExpression",

@@ -2,14 +2,24 @@
   "name": "ast-search",
   "version": "0.2.4",
   "description": "",
-  "main": "main.js",
+  "main": "build/main.js",
+  "exports": {
+    ".": {
+      "import": "./build/main.js",
+      "types": "./build/main.d.ts"
+    },
+    "./plugin": {
+      "import": "./build/plugin.js",
+      "types": "./build/plugin.d.ts"
+    }
+  },
   "scripts": {
     "dev": "npx tsc --watch",
     "debug:vue": "npx tsc && node ./build/main.js 'setup > this' --dir src/__tests__/dummyFiles",
     "debug:react": "npx tsc && node ./build/main.js 'useState' --dir src/__tests__/dummyFiles",
     "debug:empty": "npx tsc && node ./build/main.js 'ValidationsTab > this' --dir src/__tests__/dummyFiles",
     "debug:basics": "npx tsc && node ./build/main.js 'arrowFunction' --dir src/__tests__/dummyFiles",
-    "test": "jest",
+    "test": "jest --testPathPattern='src/__tests__'",
     "build": "npx tsc && cp build/main.js ast-search",
     "prepublishOnly": "npx tsc"
   },
@@ -25,6 +35,9 @@
     "url": "https://github.com/willey-shiplet/ast-search.git"
   },
   "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "onlyBuiltDependencies": ["tree-sitter", "tree-sitter-python"]
+  },
   "dependencies": {
     "@babel/parser": "^7.24.4",
     "@babel/types": "^7.24.0",
@@ -36,7 +49,9 @@
   },
   "files": [
     "build/*.js",
+    "build/*.d.ts",
     "build/helpers/*.js",
+    "build/backends/**/*.js",
     "README.md"
   ],
   "pkg": {
@@ -49,6 +64,7 @@
     "@babel/preset-typescript": "^7.24.1",
     "@jest/globals": "^29.7.0",
     "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^10.0.0",
     "@semantic-release/npm": "^13.1.3",
