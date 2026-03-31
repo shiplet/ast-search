@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 import yargs from "yargs/yargs";
+import { readFile } from "node:fs/promises";
+import { createRequire } from "module";
+import { resolve, dirname } from "node:path";
 import { walkRepoFiles } from "./walk.js";
 import { parseFile } from "./file.js";
 import type { Match } from "./types.js";
@@ -7,6 +10,7 @@ import { formatMatches, OutputFormat } from "./output.js";
 import { defaultRegistry } from "./registry.js";
 import { JSLanguageBackend } from "./backends/js/index.js";
 import { VERSION } from "./version.js";
+
 
 // Register built-in JS/TS/Vue backend
 defaultRegistry.register(new JSLanguageBackend());
@@ -39,14 +43,18 @@ const y = yargs(process.argv.slice(2))
   .scriptName("ast-search")
   .usage("$0 <query> [--dir <path>] [--format <fmt>]")
   .command(
-    "$0 <query>",
+    "$0 [query]",
     "Search a repo for AST patterns using CSS selector syntax",
     (yargs) =>
       yargs
         .positional("query", {
           type: "string",
           describe: "Query string (esquery CSS selector for JS/TS; tree-sitter S-expression for Python)",
-          demandOption: true,
+        })
+        .option("agent-help", {
+          type: "boolean",
+          describe: "print AGENTS.md guidance for AI coding agents and exit (combine with --plugin to include plugin docs)",
+          default: false,
         })
         .option("dir", {
           alias: "d",
@@ -73,13 +81,38 @@ const y = yargs(process.argv.slice(2))
           describe: "load a language plugin package (e.g. ast-search-python)",
         }),
     async (argv) => {
-      const { query, dir, format, lang, plugin } = argv as {
-        query: string;
+      const { query, dir, format, lang, plugin, agentHelp } = argv as {
+        query?: string;
         dir: string;
         format: OutputFormat;
         lang?: string;
         plugin?: string[];
+        agentHelp: boolean;
       };
+
+      if (agentHelp) {
+        const scriptDir = dirname(resolve(process.argv[1] ?? ""));
+        const coreAgentsPath = resolve(scriptDir, "..", "AGENTS.md");
+        const coreContent = await readFile(coreAgentsPath, "utf8");
+        process.stdout.write(coreContent);
+        const _require = createRequire(resolve(process.argv[1] ?? ""));
+        for (const pkg of plugin ?? []) {
+          try {
+            const pluginMain = _require.resolve(pkg);
+            const pluginAgentsPath = resolve(dirname(pluginMain), "..", "AGENTS.md");
+            const pluginContent = await readFile(pluginAgentsPath, "utf8");
+            process.stdout.write("\n---\n\n" + pluginContent);
+          } catch {
+            // plugin has no AGENTS.md or couldn't be resolved
+          }
+        }
+        process.exit(0);
+      }
+
+      if (!query) {
+        process.stderr.write("Error: query is required\n");
+        process.exit(2);
+      }
 
       try {
         // Load plugins before searching
