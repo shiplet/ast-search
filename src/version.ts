@@ -1,2 +1,2 @@
 // Auto-updated by semantic-release via @semantic-release/exec — do not edit manually.
-export const VERSION = "0.2.4";
+export const VERSION = "0.3.0";

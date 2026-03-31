@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/willey-shiplet/ast-search/compare/v0.2.4...v0.3.0) (2026-03-31)
+
+
+### Features
+
+* **Python:** add python package as plugin ([041befe](https://github.com/willey-shiplet/ast-search/commit/041befed894fdd9234ddb58ccb61206fb6db916c))
+
 ## [0.2.4](https://github.com/willey-shiplet/ast-search/compare/v0.2.3...v0.2.4) (2026-03-31)
 
 
