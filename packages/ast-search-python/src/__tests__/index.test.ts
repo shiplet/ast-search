@@ -211,6 +211,23 @@ describe("PythonLanguageBackend.query — raw S-expressions", () => {
     expect(matches).toHaveLength(0);
   });
 
+  test("#eq? filters method calls by object name", async () => {
+    // foo.bar() and baz.bar() are both (call (attribute (identifier) ...))
+    // #eq? should keep only captures related to foo, not baz
+    const source = "foo.bar()\nbaz.bar()\n";
+    const ast = await backend.parse(source, "test.py");
+    const matches = await backend.query(
+      ast,
+      "(call function: (attribute object: (identifier) @obj) (#eq? @obj \"foo\")) @call",
+      source,
+      "test.py",
+    );
+    // captures() returns all named captures: @call (the whole call) and @obj (the identifier)
+    expect(matches.length).toBeGreaterThan(0);
+    expect(matches.some((m) => m.source === "foo.bar()")).toBe(true);
+    expect(matches.every((m) => !m.source.includes("baz"))).toBe(true);
+  });
+
   test("match objects have correct shape", async () => {
     const ast = await backend.parse(FIXTURES.functions, "test.py");
     const [match] = await backend.query(ast, "fn", FIXTURES.functions, "test.py");

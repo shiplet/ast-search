@@ -46,7 +46,11 @@ export function runTreeSitterQuery(
 ): Match[] {
   assertValidPattern(pattern);
   const tree = ast as TSTree;
-  const q = (language as TSLanguage).query(pattern);
+  // captures() only returns nodes that have a capture name (@something).
+  // If the user wrote a bare S-expression like (function_definition), add @_
+  // so results are returned.
+  const queryPattern = pattern.includes("@") ? pattern : `${pattern} @_`;
+  const q = (language as TSLanguage).query(queryPattern);
   const captures = q.captures(tree.rootNode);
 
   // web-tree-sitter may return different JS objects for the same node when

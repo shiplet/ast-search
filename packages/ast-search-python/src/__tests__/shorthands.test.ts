@@ -76,6 +76,18 @@ describe("expandShorthands", () => {
     expect(expandShorthands(raw)).toBe(raw);
   });
 
+  test("does not expand node type names inside S-expressions (preceded by open paren)", () => {
+    // call, await, yield, lambda, decorator have shorthand names that are also
+    // tree-sitter node types; they must not be expanded when used as type names.
+    expect(expandShorthands("(call) @c")).toBe("(call) @c");
+    expect(expandShorthands("(await) @a")).toBe("(await) @a");
+    expect(expandShorthands("(lambda) @l")).toBe("(lambda) @l");
+    expect(expandShorthands("(decorator) @d")).toBe("(decorator) @d");
+    // Bare usage should still expand
+    expect(expandShorthands("call")).toBe("(call) @_");
+    expect(expandShorthands("await")).toBe("(await) @_");
+  });
+
   test("expands all documented shorthands without error", () => {
     for (const key of Object.keys(PYTHON_SHORTHANDS)) {
       expect(() => expandShorthands(key)).not.toThrow();

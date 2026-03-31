@@ -146,6 +146,19 @@ describe("runTreeSitterQuery", () => {
     expect(matches).toHaveLength(1);
   });
 
+  test("returns matches for an S-expression without a capture name", () => {
+    // (function_definition) has no @capture — should still return results
+    const matches = runTreeSitterQuery(
+      simpleAst,
+      "(function_definition)",
+      SIMPLE_SOURCE,
+      "test.py",
+      language,
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0].source).toBe("def hello(): pass");
+  });
+
   test("throws on a bare word before reaching tree-sitter", () => {
     expect(() =>
       runTreeSitterQuery(simpleAst, "bareword", SIMPLE_SOURCE, "test.py", language),
