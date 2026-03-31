@@ -1,27 +1,39 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test, beforeAll } from "@jest/globals";
 import { createRequire } from "module";
+import path from "path";
 import { runTreeSitterQuery, validateTreeSitterQuery } from "../query.js";
 
 const _require = createRequire(import.meta.url);
-const Parser = _require("tree-sitter") as {
-  new (): { setLanguage(lang: unknown): void; parse(source: string): unknown };
-  Query: unknown;
-};
-const pythonModule = _require("tree-sitter-python") as { language: unknown };
 
-const parser = new Parser();
-parser.setLanguage(pythonModule);
-const language = pythonModule.language;
-// Cast to never to pass through the opaque TSQueryConstructor interface
-const QueryClass = Parser.Query as never;
+let language: unknown;
+let simpleAst: unknown;
+let simpleParser: { parse(s: string): unknown };
 
 const SIMPLE_SOURCE = "def hello(): pass\nclass Foo: pass\nx = 1\n";
-const simpleAst = parser.parse(SIMPLE_SOURCE);
+
+beforeAll(async () => {
+  const { default: Parser } = await import("web-tree-sitter");
+  const wasmDir = path.dirname(_require.resolve("web-tree-sitter"));
+  await Parser.init({
+    locateFile: (_name: string) => path.join(wasmDir, "tree-sitter.wasm"),
+  });
+  const wasmPath = path.join(
+    path.dirname(_require.resolve("tree-sitter-wasms/package.json")),
+    "out",
+    "tree-sitter-python.wasm",
+  );
+  const Python = await Parser.Language.load(wasmPath);
+  const parser = new Parser();
+  parser.setLanguage(Python);
+  language = Python;
+  simpleParser = parser as unknown as { parse(s: string): unknown };
+  simpleAst = simpleParser.parse(SIMPLE_SOURCE);
+});
 
 describe("validateTreeSitterQuery", () => {
   test("accepts a valid S-expression pattern", () => {
     expect(() =>
-      validateTreeSitterQuery("(function_definition) @fn", language, QueryClass),
+      validateTreeSitterQuery("(function_definition) @fn", language),
     ).not.toThrow();
   });
 
@@ -30,26 +42,25 @@ describe("validateTreeSitterQuery", () => {
       validateTreeSitterQuery(
         "(identifier) @n (#eq? @n \"hello\")",
         language,
-        QueryClass,
       ),
     ).not.toThrow();
   });
 
   test("throws on a bare word (guard catches before tree-sitter)", () => {
     expect(() =>
-      validateTreeSitterQuery("notapattern", language, QueryClass),
+      validateTreeSitterQuery("notapattern", language),
     ).toThrow(/Invalid tree-sitter query/);
   });
 
   test("throws on a pattern with an unknown node type", () => {
     expect(() =>
-      validateTreeSitterQuery("(totally_nonexistent_node_type) @x", language, QueryClass),
+      validateTreeSitterQuery("(totally_nonexistent_node_type) @x", language),
     ).toThrow(/Invalid tree-sitter query/);
   });
 
   test("throws on a malformed S-expression", () => {
     expect(() =>
-      validateTreeSitterQuery("(((unclosed", language, QueryClass),
+      validateTreeSitterQuery("(((unclosed", language),
     ).toThrow(/Invalid tree-sitter query/);
   });
 });
@@ -62,7 +73,6 @@ describe("runTreeSitterQuery", () => {
       SIMPLE_SOURCE,
       "test.py",
       language,
-      QueryClass,
     );
     expect(matches).toHaveLength(1);
     expect(matches[0].file).toBe("test.py");
@@ -78,21 +88,19 @@ describe("runTreeSitterQuery", () => {
       SIMPLE_SOURCE,
       "test.py",
       language,
-      QueryClass,
     );
     expect(matches[0].line).toBe(2);
   });
 
   test("returns multiple matches", () => {
     const source = "def a(): pass\ndef b(): pass\ndef c(): pass\n";
-    const ast = parser.parse(source);
+    const ast = simpleParser.parse(source);
     const matches = runTreeSitterQuery(
       ast,
       "(function_definition) @fn",
       source,
       "multi.py",
       language,
-      QueryClass,
     );
     expect(matches).toHaveLength(3);
     expect(matches.map((m) => m.source)).toEqual([
@@ -109,43 +117,38 @@ describe("runTreeSitterQuery", () => {
       SIMPLE_SOURCE,
       "test.py",
       language,
-      QueryClass,
     );
     expect(matches).toHaveLength(0);
   });
 
   test("source field contains only the first line of a multi-line node", () => {
     const source = "def long(\n    a,\n    b\n):\n    pass\n";
-    const ast = parser.parse(source);
+    const ast = simpleParser.parse(source);
     const matches = runTreeSitterQuery(
       ast,
       "(function_definition) @fn",
       source,
       "long.py",
       language,
-      QueryClass,
     );
     expect(matches[0].source).toBe("def long(");
     expect(matches[0].source).not.toContain("\n");
   });
 
   test("deduplicates nodes captured by multiple capture names", () => {
-    // A pattern that captures the same node under two names
     const matches = runTreeSitterQuery(
       simpleAst,
       "(function_definition) @a (function_definition) @b",
       SIMPLE_SOURCE,
       "test.py",
       language,
-      QueryClass,
     );
-    // Should report the function_definition only once
     expect(matches).toHaveLength(1);
   });
 
   test("throws on a bare word before reaching tree-sitter", () => {
     expect(() =>
-      runTreeSitterQuery(simpleAst, "bareword", SIMPLE_SOURCE, "test.py", language, QueryClass),
+      runTreeSitterQuery(simpleAst, "bareword", SIMPLE_SOURCE, "test.py", language),
     ).toThrow(/Invalid tree-sitter query/);
   });
 
@@ -156,7 +159,6 @@ describe("runTreeSitterQuery", () => {
       SIMPLE_SOURCE,
       "path/to/my_file.py",
       language,
-      QueryClass,
     );
     expect(matches[0].file).toBe("path/to/my_file.py");
   });

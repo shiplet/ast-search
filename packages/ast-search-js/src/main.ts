@@ -18,14 +18,14 @@ export async function searchRepo(
 ): Promise<Match[]> {
   // Early validation when only one backend is registered (common JS-only case)
   if (registry.allBackends.length === 1) {
-    registry.allBackends[0].validateSelector(selector);
+    await registry.allBackends[0].validateSelector(selector);
   }
 
   const results: Match[] = [];
   for await (const filePath of walkRepoFiles(dir, registry.allExtensions)) {
     try {
       const { ast, source, backend } = await parseFile(filePath, registry);
-      const matches = backend.query(ast, selector, source, filePath);
+      const matches = await backend.query(ast, selector, source, filePath);
       results.push(...matches);
     } catch {
       // skip unparseable files / unsupported extensions
@@ -105,7 +105,7 @@ const y = yargs(process.argv.slice(2))
           scoped.register(backend);
           registry = scoped;
           // Always validate early when --lang restricts to a single backend
-          backend.validateSelector(query);
+          await backend.validateSelector(query);
         }
 
         const matches = await searchRepo(query, dir, registry);

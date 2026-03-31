@@ -1,6 +1,6 @@
 import type { Match } from "ast-search-js/plugin";
 
-// tree-sitter types (minimal surface we use, compatible with v0.21+)
+// web-tree-sitter types (minimal surface we use)
 interface TSNode {
   startPosition: { row: number; column: number };
   startIndex: number;
@@ -13,12 +13,12 @@ interface TSCapture {
   name: string;
 }
 
-interface TSQueryConstructor {
-  new (language: unknown, pattern: string): TSQuery;
-}
-
 interface TSQuery {
   captures(node: TSNode): TSCapture[];
+}
+
+interface TSLanguage {
+  query(pattern: string): TSQuery;
 }
 
 interface TSTree {
@@ -43,20 +43,22 @@ export function runTreeSitterQuery(
   source: string,
   filePath: string,
   language: unknown,
-  QueryClass: TSQueryConstructor,
 ): Match[] {
   assertValidPattern(pattern);
   const tree = ast as TSTree;
-  const q = new QueryClass(language, pattern);
+  const q = (language as TSLanguage).query(pattern);
   const captures = q.captures(tree.rootNode);
 
-  const seen = new Set<TSNode>();
+  // web-tree-sitter may return different JS objects for the same node when
+  // multiple capture names match it, so deduplicate by position instead of identity.
+  const seen = new Set<string>();
   const results: Match[] = [];
 
   for (const capture of captures) {
     const node = capture.node;
-    if (seen.has(node)) continue;
-    seen.add(node);
+    const key = `${node.startIndex}:${node.endIndex}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
 
     const text = source.slice(node.startIndex, node.endIndex);
     const firstLine = text.split("\n")[0].trimEnd();
@@ -75,11 +77,10 @@ export function runTreeSitterQuery(
 export function validateTreeSitterQuery(
   pattern: string,
   language: unknown,
-  QueryClass: TSQueryConstructor,
 ): void {
   try {
     assertValidPattern(pattern);
-    new QueryClass(language, pattern);
+    (language as TSLanguage).query(pattern);
   } catch (e) {
     throw new Error(
       `Invalid tree-sitter query: ${e instanceof Error ? e.message : String(e)}`,

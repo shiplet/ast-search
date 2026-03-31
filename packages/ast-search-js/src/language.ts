@@ -18,11 +18,11 @@ export interface LanguageBackend {
    * backend's native query syntax (after shorthand expansion). Returns matches
    * with file/line/col/source fields.
    */
-  query(ast: unknown, selector: string, source: string, filePath: string): Match[];
+  query(ast: unknown, selector: string, source: string, filePath: string): Promise<Match[]> | Match[];
 
   /**
    * Validate a selector string. Expands shorthands internally, then checks
    * syntax. Throws with a descriptive message on invalid syntax.
    */
-  validateSelector(selector: string): void;
+  validateSelector(selector: string): Promise<void> | void;
 }

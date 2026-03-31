@@ -32,14 +32,14 @@
     "provenance": true
   },
   "dependencies": {
-    "tree-sitter": "^0.21.1",
-    "tree-sitter-python": "^0.21.0"
+    "web-tree-sitter": "^0.24.0",
+    "tree-sitter-wasms": "^0.1.12"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.7",
-    "ast-search-js": "1.0.0",
+    "ast-search-js": "workspace:*",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.2",
     "typescript": "^5.4.5"
