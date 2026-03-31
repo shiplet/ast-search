@@ -110,8 +110,24 @@ ast-search 'ObjectMethod this'
 ```
 
 ### React: find `.map()` calls missing a `key` JSX attribute
+
+Two approaches, different granularity:
+
+**Element-level** — flags each specific `JSXElement` inside a `.map()` that is missing a `key` attribute. More precise; use this when you want exact line numbers for the offending elements:
+```bash
+ast-search 'CallExpression[callee.property.name="map"] JSXElement:not(:has(JSXAttribute[name.name="key"]))'
+```
+
+**Component-level** — flags the `VariableDeclarator` (the whole component) when it contains a `.map()` but no `key` attribute anywhere inside it. Coarser, but useful for getting a file list to review:
 ```bash
 ast-search 'VariableDeclarator:has(CallExpression[callee.property.name="map"]):not(:has(JSXAttribute[name.name="key"]))'
+```
+
+### React: find `.map()` calls returning a JSXFragment (always a missing-key violation)
+
+`<>...</>` fragment syntax can never accept a `key` prop, so any fragment returned from `.map()` is unconditionally a missing-key violation. No `:not()` needed:
+```bash
+ast-search 'CallExpression[callee.property.name="map"] JSXFragment'
 ```
 
 ### React: find all `.map()` calls (including optional-chain variants like `items?.map(...)`)
