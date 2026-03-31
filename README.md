@@ -1,86 +1,97 @@
 # ast-search
 
-A (somewhat) limited-case search tool meant to facilitate large-scale refactors.
+A CLI tool for searching source files using AST patterns, designed to facilitate large-scale refactors.
 
-Searches files for a given function or property name, and then determines whether those functions or properties contain a given expression or value.
+Accepts an [esquery](https://github.com/estools/esquery) CSS-selector-style query and searches all supported files under a directory, printing each match with its file path, line, and column.
 
 ## Example
 
-For example, say you have a large number of VueJS single-file-components with `setup` functions that might be improperly accessing the `this.` instance of the file:
+Say you have Vue SFCs with `setup()` functions that improperly access `this`:
 
-```
-<script>
-...
+```js
 export default {
-    setup() {
-        const store = useStore();
-        const dynamicTestValue = computed(() => {
-            return this.testValue
-        })
-    },
-    computed: {
-        testValue: 0
-    }
+  setup() {
+    const value = computed(() => {
+      return this.testValue  // shouldn't be here
+    })
+  }
 }
-</script>
 ```
 
-If you have hundreds of component files, this would be especially difficult (if not impossible) to find with a regular expression because it would require both searching across multiple lines and knowing the lexical scope of the `setup` function, which would vary widely across each file.
+Find all such occurrences across your whole repo:
+
+```bash
+ast-search 'ObjectMethod[key.name="setup"] ThisExpression'
+```
+
+Output:
+
+```
+src/components/Foo.vue:5:13: return this.testValue
+src/components/Bar.vue:9:18: return this.otherProp
+```
 
 ## Usage
 
-`ast-search` leverages [ acornjs ](https://github.com/acornjs/acorn) to construct an Abstract Syntax Tree of each JavaScript file it parses, and then searches relevant paths for both the given top-level function or property as well as the desired search term.
-
-For example, say the above VueJS SFC is a file at `src/components/TestValue.vue`. To search this file and determine whether the `setup` function has a `this.` expression, you'd do the following:
-
-```bash
-$ ast-search -f ./src/components/TestValue.vue --fn setup -e ThisExpression
+```
+ast-search <query> [--dir <path>] [--format <fmt>]
 ```
 
-If it finds the expression in the function, it echoes the file path:
+| Argument         | Description                                              | Default      |
+| ---------------- | -------------------------------------------------------- | ------------ |
+| `<query>`        | esquery selector string (see below)                      | required     |
+| `-d, --dir`      | root directory to search                                 | current dir  |
+| `-f, --format`   | output format: `text`, `json`, or `files`                | `text`       |
+
+### Output formats
+
+- **`text`** (default) — one match per line as `file:line:col: source`
+- **`files`** — unique file paths only, one per line; useful for piping to `xargs`
+- **`json`** — full match array as JSON
+
+## Query syntax
+
+Queries use [esquery](https://github.com/estools/esquery) CSS selector syntax over Babel AST node types. A few examples:
 
 ```bash
-$ ast-search -f ./src/components/TestValue.vue --fn setup -e ThisExpression
-./src/components/TestValue.vue
+# Find all arrow functions inside a function named "setup"
+ast-search 'ObjectMethod[key.name="setup"] ArrowFunctionExpression'
+
+# Find await expressions anywhere
+ast-search 'AwaitExpression'
+
+# Find assignments inside catch clauses
+ast-search 'CatchClause AssignmentExpression'
 ```
 
-## Arguments
+### Shorthands
 
-| Flag               | Definition                                                                                         |
-| ------------------ | -------------------------------------------------------------------------------------------------- |
-| `-f, --file`       | the file path to search, relative or absolute                                                      |
-| `--function, fn`   | the function to search; can be any variation of a function declaration or expression               |
-| `-p, --property`   | the property to search; expected to be a property on an object                                     |
-| `-m, --multiple`   | used for searching function calls, of which a single file may contain several                      |
-| `-e, --expression` | the type of expression to search for; must be a valid `acornjs` JavaScript expression (list below) |
-| `-d, --debug`      | output the full Abstract Syntax Tree to a file called `output.json`                                |
+Common node types can be written as short keywords:
 
-### Supported Expressions
+| Shorthand  | Expands to                  |
+| ---------- | --------------------------- |
+| `this`     | `ThisExpression`            |
+| `await`    | `AwaitExpression`           |
+| `yield`    | `YieldExpression`           |
+| `new`      | `NewExpression`             |
+| `call`     | `CallExpression`            |
+| `arrow`    | `ArrowFunctionExpression`   |
+| `fn`       | `FunctionExpression`        |
+| `member`   | `MemberExpression`          |
+| `ternary`  | `ConditionalExpression`     |
+| `template` | `TemplateLiteral`           |
+| `tagged`   | `TaggedTemplateExpression`  |
+| `assign`   | `AssignmentExpression`      |
+| `binary`   | `BinaryExpression`          |
+| `logical`  | `LogicalExpression`         |
+| `spread`   | `SpreadElement`             |
 
-| Expression Name          | Reference                                             | Common Operators              |
-| ------------------------ | ----------------------------------------------------- | ----------------------------- |
-| ArrayExpression          | begins an array expression                            | `[]`                          |
-| ArrowFunctionExpression  | begins an arrow function in any lexical context       | `() =>`                       |
-| AssignmentExpression     | equals operator                                       | `=`                           |
-| AwaitExpression          | asynchronous promise resolver                         | `await`                       |
-| BinaryExpression         | any left + right side operation                       | `1 + 1`                       |
-| CallExpression           | function calls                                        | `fn()`                        |
-| ChainExpression          | chained property or method accessors                  | `store.state.someFn()`        |
-| ConditionalExpression    | ternary expression                                    | `x ? y : z`                   |
-| FunctionExpression       | named, non-assigned functions                         | `fn() {}`                     |
-| ImportExpression         | import statements                                     | `import x from 'y'`           |
-| LogicalExpression        | evaluates to a boolean, e.g. if statement expressions | `if (x > y)`                  |
-| MemberExpression         | object member accessor                                | `this.theMember`              |
-| NewExpression            | `new` constructor declaration                         | `const x = new Item()`        |
-| ObjectExpression         | an object as referenced by its brackets               | `{}`                          |
-| ParenthesizedExpression  | an expression wrapped in parens                       | `const foo = (bar)`           |
-| SequenceExpression       | deconstructor expressions                             | `({...(a,b),c})`              |
-| TaggedTemplateExpression | backtick expressions                                  | <pre>`${test}`</pre>          |
-| ThisExpression           | this accessors                                        | `this.someItem`               |
-| UnaryExpression          | standalone statements                                 | ` return x + 1` (the `x + 1`) |
-| UpdateExpression         | increments, decrements                                | `x++` or `--y`                |
-| YieldExpression          | yield statements in iterators                         | `yield x`                     |
+The original Vue `this` example using shorthands:
 
-## Support
+```bash
+ast-search 'ObjectMethod[key.name="setup"] this'
+```
 
-Currently only supports VueJS's Single File Components.
+## Supported file types
+
+`.js`, `.ts`, `.jsx`, `.tsx`, `.mjs`, `.cjs`, `.vue`
