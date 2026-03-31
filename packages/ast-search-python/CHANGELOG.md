@@ -1,3 +1,10 @@
+## ast-search-python [1.0.5](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.4...ast-search-python@1.0.5) (2026-03-31)
+
+
+### Bug Fixes
+
+* **ast-search-python:** replace native tree-sitter with web-tree-sitter, fix S-expression expansion and no-capture queries ([c1f4667](https://github.com/willey-shiplet/ast-search/commit/c1f46676c474467e920be321b3a213cfcb876875))
+
 ## ast-search-python [1.0.4](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.3...ast-search-python@1.0.4) (2026-03-31)
 
 
