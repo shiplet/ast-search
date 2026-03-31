@@ -3,3 +3,7 @@ output.json
 ast-search
 build/
 coverage/
+.agents
+.ralph
+PROMPT.md
+ralph.yml
