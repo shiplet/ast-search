@@ -1,6 +1,6 @@
 {
   "branches": ["main"],
-  "tagFormat": "v${version}",
+  "tagFormat": "ast-search@${version}",
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
