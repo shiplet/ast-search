@@ -1,3 +1,10 @@
+## ast-search-js [1.0.2](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.0.1...ast-search-js@1.0.2) (2026-03-31)
+
+
+### Bug Fixes
+
+* **CLI:** update cli with --agent-help command ([6a0856a](https://github.com/willey-shiplet/ast-search/commit/6a0856a36223c73f50cd93d85123cc02c2d56194))
+
 ## ast-search-js [1.0.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.0.0...ast-search-js@1.0.1) (2026-03-31)
 
 
