@@ -1,3 +1,10 @@
+## ast-search-python [1.0.7](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.6...ast-search-python@1.0.7) (2026-04-01)
+
+
+### Dependencies
+
+* **ast-search-js:** upgraded to 1.0.3
+
 ## ast-search-python [1.0.6](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.5...ast-search-python@1.0.6) (2026-03-31)
 
 
