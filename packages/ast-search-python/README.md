@@ -65,11 +65,22 @@ ast-search '(class_definition) @cls' --plugin ast-search-python
 # Find all calls to a specific function by name
 ast-search '(call function: (identifier) @n (#eq? @n "my_func")) @c' --plugin ast-search-python
 
+# Find calls to any function matching a regex (using #match? predicate)
+ast-search '(call function: (identifier) @n (#match? @n "^(get|post|put|delete)_")) @c' --plugin ast-search-python
+
 # Restrict to only Python files in a mixed-language repo
 ast-search 'fn' --lang python --plugin ast-search-python
 ```
 
-Raw S-expression queries must include at least one `@capture_name` — tree-sitter's `captures()` requires it to return results. Shorthands include `@_` automatically.
+Raw S-expression queries must include at least one `@capture_name` — tree-sitter requires it to return results. Shorthands include `@_` automatically.
+
+Named captures (`@name`, excluding `@_`) appear in the `captures` field of each match. All captures from a single pattern application are grouped on one result. In text output they appear after ` | `; in JSON they're in a `captures` object.
+
+```bash
+# Find logging calls — capture the method name and string argument
+ast-search '(call function: [(identifier)(attribute)] @fn (#match? @fn "^(log|info|warn|error)") arguments: (argument_list (string) @msg)) @call' --plugin ast-search-python
+# text output: src/app.py:5:0: logging.info("msg") | fn=logging.info msg="msg" call=logging.info("msg")
+```
 
 ### Shorthands
 

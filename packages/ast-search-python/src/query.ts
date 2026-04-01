@@ -13,8 +13,14 @@ interface TSCapture {
   name: string;
 }
 
+interface TSMatch {
+  pattern: number;
+  captures: TSCapture[];
+}
+
 interface TSQuery {
   captures(node: TSNode): TSCapture[];
+  matches(node: TSNode): TSMatch[];
 }
 
 interface TSLanguage {
@@ -46,32 +52,47 @@ export function runTreeSitterQuery(
 ): Match[] {
   assertValidPattern(pattern);
   const tree = ast as TSTree;
-  // captures() only returns nodes that have a capture name (@something).
+  // matches() only returns nodes that have a capture name (@something).
   // If the user wrote a bare S-expression like (function_definition), add @_
   // so results are returned.
   const queryPattern = pattern.includes("@") ? pattern : `${pattern} @_`;
   const q = (language as TSLanguage).query(queryPattern);
-  const captures = q.captures(tree.rootNode);
 
-  // web-tree-sitter may return different JS objects for the same node when
-  // multiple capture names match it, so deduplicate by position instead of identity.
+  // Use matches() instead of captures() so all captures from one pattern
+  // application are grouped together — enabling multi-node capture output.
   const seen = new Set<string>();
   const results: Match[] = [];
 
-  for (const capture of captures) {
-    const node = capture.node;
-    const key = `${node.startIndex}:${node.endIndex}`;
+  for (const match of q.matches(tree.rootNode)) {
+    // Anchor on the first non-underscore capture (the primary match location).
+    // @_ is the auto-appended anonymous marker; user captures like @fn, @msg
+    // are the meaningful ones and also serve as the anchor.
+    const anchor =
+      match.captures.find((c) => !c.name.startsWith("_")) ??
+      match.captures[0];
+    if (!anchor) continue;
+
+    const key = `${anchor.node.startIndex}:${anchor.node.endIndex}`;
     if (seen.has(key)) continue;
     seen.add(key);
 
-    const text = source.slice(node.startIndex, node.endIndex);
+    const text = source.slice(anchor.node.startIndex, anchor.node.endIndex);
     const firstLine = text.split("\n")[0].trimEnd();
+
+    // Collect all named captures except the anonymous @_ marker.
+    const captureMap: Record<string, string> = {};
+    for (const cap of match.captures) {
+      if (!cap.name.startsWith("_")) {
+        captureMap[cap.name] = source.slice(cap.node.startIndex, cap.node.endIndex);
+      }
+    }
 
     results.push({
       file: filePath,
-      line: node.startPosition.row + 1, // 1-indexed to match JS backend
-      col: node.startPosition.column,
+      line: anchor.node.startPosition.row + 1, // 1-indexed to match JS backend
+      col: anchor.node.startPosition.column,
       source: firstLine,
+      ...(Object.keys(captureMap).length > 0 ? { captures: captureMap } : {}),
     });
   }
 

@@ -54,6 +54,7 @@ Shorthands are **not** expanded inside quoted attribute values: `call[callee.nam
 ```
 NodeType                                   # match by type
 NodeType[prop.name="value"]                # attribute equality
+NodeType[prop=/regex/flags]                # attribute regex match (see Captures)
 NodeType[prop=true]                        # boolean attribute
 AncestorType DescendantType               # descendant (any depth)
 ParentType > ChildType                    # direct child only
@@ -61,6 +62,34 @@ NodeType:has(OtherType)                   # contains a matching descendant
 NodeType:not(OtherType)                   # excludes nodes matching selector
 :has(...):not(...)                        # combinable
 ```
+
+Shorthands are **not** expanded inside regex literals: `call[callee.name=/^(call|fn)$/]` keeps `/^(call|fn)$/` literal.
+
+---
+
+## Captures
+
+When an attribute selector uses a regex (`/pattern/flags`), the matched value is automatically included in the `captures` field of each result. The capture key is the property path as written.
+
+```bash
+# Find logging calls and capture the method name
+ast-search 'call[callee.property.name=/^(log|info|warn|error)$/]'
+```
+
+Text output appends captures after the source line:
+
+```
+src/app.ts:10:4: logger.info("hello world") | callee.property.name=info
+```
+
+Multiple regex matchers each produce their own capture key:
+
+```bash
+ast-search 'call[callee.property.name=/^(log|info)$/][arguments.0.value=/^user/]'
+# → | callee.property.name=info arguments.0.value=user logged in
+```
+
+Exact-string matchers (`[prop="value"]`) do **not** produce captures.
 
 ---
 
@@ -70,10 +99,10 @@ NodeType:not(OtherType)                   # excludes nodes matching selector
 
 ```
 src/components/Foo.vue:5:13: return this.testValue
-src/components/Bar.vue:9:0: setup() {
+src/app.ts:10:4: logger.info("hello world") | callee.property.name=info
 ```
 
-Pattern: `file:line:col: source` — `line` is 1-indexed, `col` is 0-indexed. `source` is the first line of the matched node, trimmed.
+Pattern: `file:line:col: source` — `line` is 1-indexed, `col` is 0-indexed. `source` is the first line of the matched node, trimmed. Captures (if any) follow after ` | `.
 
 ### `--format json`
 
@@ -84,11 +113,18 @@ Pattern: `file:line:col: source` — `line` is 1-indexed, `col` is 0-indexed. `s
     "line": 5,
     "col": 13,
     "source": "return this.testValue"
+  },
+  {
+    "file": "src/app.ts",
+    "line": 10,
+    "col": 4,
+    "source": "logger.info(\"hello world\")",
+    "captures": { "callee.property.name": "info" }
   }
 ]
 ```
 
-Single pretty-printed JSON array. Parse with `jq` or read directly.
+Single pretty-printed JSON array. The `captures` field is present only when the query used regex attribute matchers.
 
 ### `--format files`
 
@@ -160,6 +196,12 @@ ast-search 'FunctionDeclaration arrow'
 ast-search 'call[callee.object.name="console"][callee.property.name="log"]'
 ```
 
+### Find all logging calls across multiple method names and capture which method was used
+```bash
+ast-search 'call[callee.property.name=/^(log|info|warn|error|debug)$/]'
+# output: ... | callee.property.name=warn
+```
+
 ### Find all `new` expressions for a specific class
 ```bash
 ast-search 'NewExpression[callee.name="MyClass"]'
@@ -202,7 +244,13 @@ ast-search 'call[callee.name="deprecated"]' --format files | xargs grep -n "depr
 import { searchRepo } from 'ast-search';
 
 const matches = await searchRepo(selector, dir);
-// matches: Array<{ file: string; line: number; col: number; source: string }>
+// matches: Array<{
+//   file: string;
+//   line: number;
+//   col: number;
+//   source: string;
+//   captures?: Record<string, string>;  // present when selector uses /regex/ matchers
+// }>
 ```
 
 To load plugins programmatically:
@@ -234,5 +282,5 @@ const matches = await searchRepo(selector, dir);
 - **`node_modules` is always excluded.** So are any files/directories whose names start with `.`.
 - **`col` is 0-indexed.** `line` is 1-indexed. Match this when cross-referencing editor output.
 - **`source` is the first line only**, trimmed. Multi-line nodes (e.g., a full function body) are truncated. Use `--format json` and the `file`/`line`/`col` fields to locate the full node.
-- **JS shorthands expand globally** outside quoted strings. Avoid bare shorthand keywords like `new` or `this` in unquoted attribute values — quote them: `[callee.name="this"]`.
+- **JS shorthands expand globally** outside quoted strings and regex literals. Avoid bare shorthand keywords like `new` or `this` in unquoted attribute values — quote them: `[callee.name="this"]`. Regex literals (`/pattern/`) are preserved as-is.
 - **Early selector validation** only runs when a single backend is active (either only core is loaded, or `--lang` is specified). In mixed-language mode, invalid selectors surface as no matches rather than an error at startup.

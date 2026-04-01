@@ -83,9 +83,9 @@ ast-search <query> [--dir <path>] [--format <fmt>] [--lang <id>] [--plugin <pkg>
 
 ### Output formats
 
-- **`text`** (default) — one match per line as `file:line:col: source`
+- **`text`** (default) — one match per line as `file:line:col: source`; when the query uses regex matchers, captured values are appended after ` | `
 - **`files`** — unique file paths only, one per line; useful for piping to `xargs`
-- **`json`** — full match array as JSON
+- **`json`** — full match array as JSON; includes a `captures` field when regex matchers were used
 
 ## Query syntax
 
@@ -102,7 +102,13 @@ ast-search 'AwaitExpression'
 
 # Find assignments inside catch clauses
 ast-search 'CatchClause AssignmentExpression'
+
+# Find logging calls across multiple methods — regex attribute matching
+# Captures the matched method name: | callee.property.name=warn
+ast-search 'call[callee.property.name=/^(log|info|warn|error)$/]'
 ```
+
+Attribute selectors support both exact strings (`[prop="value"]`) and regex literals (`[prop=/pattern/flags]`). Regex matchers automatically capture the matched value in the result's `captures` field.
 
 #### Shorthands
 

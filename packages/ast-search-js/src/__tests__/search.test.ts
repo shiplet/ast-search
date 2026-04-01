@@ -8,8 +8,8 @@ import {
   reactListNoKey,
   vueSFCOnlyJS,
 } from "./setup";
-import { runQuery, expandShorthands, normalizeOptionalChaining, Match } from "../search";
-import { getAstFromPath } from "../file";
+import { runQuery, expandShorthands, extractRegexCaptures, resolvePath, normalizeOptionalChaining, Match } from "../search";
+import { getAst, getAstFromPath } from "../file";
 import { FileHandle } from "node:fs/promises";
 import { File } from "@babel/types";
 
@@ -293,5 +293,160 @@ describe("runQuery — optional chaining", () => {
       optChainFixture,
     );
     expect(matches.length).toBeGreaterThan(0);
+  });
+});
+
+describe("expandShorthands — regex literal preservation", () => {
+  test("preserves /regex/ content unchanged", () => {
+    expect(expandShorthands('[name=/^call$/]')).toBe('[name=/^call$/]');
+    expect(expandShorthands('[name=/^fn$/]')).toBe('[name=/^fn$/]');
+  });
+
+  test("expands shorthands outside the regex but not inside", () => {
+    expect(expandShorthands('call[callee.name=/^(call|fn)$/]')).toBe(
+      'CallExpression[callee.name=/^(call|fn)$/]',
+    );
+  });
+
+  test("preserves regex flags", () => {
+    expect(expandShorthands('[name=/^call$/i]')).toBe('[name=/^call$/i]');
+    expect(expandShorthands('[name=/pattern/gims]')).toBe('[name=/pattern/gims]');
+  });
+
+  test("handles escaped slash inside regex", () => {
+    expect(expandShorthands('[value=/a\\/b/]')).toBe('[value=/a\\/b/]');
+  });
+});
+
+describe("extractRegexCaptures", () => {
+  test("extracts path and regex from a single matcher", () => {
+    const result = extractRegexCaptures('[callee.name=/^log$/]');
+    expect(result).toHaveLength(1);
+    expect(result[0].path).toBe('callee.name');
+    expect(result[0].regex).toBeInstanceOf(RegExp);
+    expect(result[0].regex.source).toBe('^log$');
+  });
+
+  test("extracts multiple matchers from one selector", () => {
+    const result = extractRegexCaptures(
+      'CallExpression[callee.property.name=/^(log|info)$/][arguments.0.value=/^user/]',
+    );
+    expect(result).toHaveLength(2);
+    expect(result[0].path).toBe('callee.property.name');
+    expect(result[1].path).toBe('arguments.0.value');
+  });
+
+  test("captures regex flags", () => {
+    const [{ regex }] = extractRegexCaptures('[name=/foo/i]');
+    expect(regex.flags).toContain('i');
+  });
+
+  test("returns empty array for selector with no regex matchers", () => {
+    expect(extractRegexCaptures('[callee.name="log"]')).toHaveLength(0);
+    expect(extractRegexCaptures('CallExpression')).toHaveLength(0);
+  });
+});
+
+describe("resolvePath", () => {
+  test("resolves a simple property", () => {
+    expect(resolvePath({ name: "foo" }, "name")).toBe("foo");
+  });
+
+  test("resolves a dotted path", () => {
+    expect(resolvePath({ callee: { name: "bar" } }, "callee.name")).toBe("bar");
+  });
+
+  test("resolves a numeric index in path", () => {
+    expect(resolvePath({ args: ["a", "b"] }, "args.1")).toBe("b");
+  });
+
+  test("returns undefined for missing intermediate property", () => {
+    expect(resolvePath({ a: null }, "a.b")).toBeUndefined();
+  });
+
+  test("returns undefined for object leaf (not a primitive)", () => {
+    expect(resolvePath({ a: { b: {} } }, "a.b")).toBeUndefined();
+  });
+
+  test("stringifies non-string primitives", () => {
+    expect(resolvePath({ async: true }, "async")).toBe("true");
+  });
+});
+
+describe("runQuery — regex attribute selectors and captures", () => {
+  test("regex attribute selector matches nodes correctly", () => {
+    const source = 'console.log("a"); logger.info("b"); foo.debug("c");';
+    const ast = getAst(source);
+    const matches = runQuery(
+      'CallExpression[callee.property.name=/^(log|info)$/]',
+      ast,
+      source,
+    );
+    expect(matches).toHaveLength(2);
+    const methods = matches.map((m) => m.source);
+    expect(methods.some((s) => s.includes("log"))).toBe(true);
+    expect(methods.some((s) => s.includes("info"))).toBe(true);
+    expect(methods.every((s) => !s.includes("debug"))).toBe(true);
+  });
+
+  test("regex with i flag matches case-insensitively", () => {
+    const source = 'console.LOG("x");';
+    const ast = getAst(source);
+    const matches = runQuery(
+      'CallExpression[callee.property.name=/^log$/i]',
+      ast,
+      source,
+    );
+    expect(matches).toHaveLength(1);
+  });
+
+  test("regex matcher populates captures with matched value", () => {
+    const source = 'logger.info("hello");';
+    const ast = getAst(source);
+    const matches = runQuery(
+      'CallExpression[callee.property.name=/^(log|info)$/]',
+      ast,
+      source,
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0].captures).toEqual({ "callee.property.name": "info" });
+  });
+
+  test("exact-string matchers produce no captures entry", () => {
+    const source = 'console.log("x");';
+    const ast = getAst(source);
+    const matches = runQuery(
+      'CallExpression[callee.property.name="log"]',
+      ast,
+      source,
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0].captures).toBeUndefined();
+  });
+
+  test("multiple regex matchers all appear in captures", () => {
+    const source = 'logger.info("hello world");';
+    const ast = getAst(source);
+    const matches = runQuery(
+      'CallExpression[callee.property.name=/^(log|info)$/][callee.object.name=/^log/]',
+      ast,
+      source,
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0].captures?.["callee.property.name"]).toBe("info");
+    expect(matches[0].captures?.["callee.object.name"]).toBe("logger");
+  });
+
+  test("missing path is omitted from captures (not undefined value)", () => {
+    const source = 'foo();';
+    const ast = getAst(source);
+    const matches = runQuery(
+      'CallExpression[callee.name=/^foo$/]',
+      ast,
+      source,
+    );
+    expect(matches).toHaveLength(1);
+    // callee.name exists on this node
+    expect(matches[0].captures?.["callee.name"]).toBe("foo");
   });
 });

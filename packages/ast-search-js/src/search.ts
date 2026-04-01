@@ -23,7 +23,8 @@ export const SHORTHANDS: Record<string, string> = {
   spread: "SpreadElement",
 };
 
-// Expand shorthands to full Babel type names, but not inside quoted attribute values.
+// Expand shorthands to full Babel type names, but not inside quoted attribute
+// values or regex literals (/pattern/flags).
 export function expandShorthands(selector: string): string {
   const keys = Object.keys(SHORTHANDS);
   const pattern = new RegExp(`\\b(${keys.join("|")})\\b`, "g");
@@ -38,15 +39,65 @@ export function expandShorthands(selector: string): string {
       while (j < selector.length && selector[j] !== ch) j++;
       parts.push(selector.slice(i, j + 1));
       i = j + 1;
+    } else if (ch === '/') {
+      // Preserve regex literal /pattern/flags as-is
+      let j = i + 1;
+      while (j < selector.length && selector[j] !== '/') {
+        if (selector[j] === '\\') j++; // skip escaped char
+        j++;
+      }
+      j++; // past closing /
+      while (j < selector.length && /[gimsuy]/.test(selector[j])) j++;
+      parts.push(selector.slice(i, j));
+      i = j;
     } else {
-      const nextQuote = selector.slice(i).search(/['"]/);
+      const nextSpecial = selector.slice(i).search(/['"/]/);
       const segment =
-        nextQuote === -1 ? selector.slice(i) : selector.slice(i, i + nextQuote);
+        nextSpecial === -1 ? selector.slice(i) : selector.slice(i, i + nextSpecial);
       parts.push(segment.replace(pattern, (m) => SHORTHANDS[m] ?? m));
-      i = nextQuote === -1 ? selector.length : i + nextQuote;
+      i = nextSpecial === -1 ? selector.length : i + nextSpecial;
     }
   }
   return parts.join("");
+}
+
+// Parse all [prop.path=/regex/flags] attribute matchers out of an expanded selector.
+export function extractRegexCaptures(
+  selector: string,
+): Array<{ path: string; regex: RegExp }> {
+  const results: Array<{ path: string; regex: RegExp }> = [];
+  // Match [some.path=/pattern/flags] — path is dotted identifiers/digits
+  const attrRe = /\[([\w.[\]]+)=(\/(?:[^/\\]|\\.)*\/[gimsuy]*)\]/g;
+  let m: RegExpExecArray | null;
+  while ((m = attrRe.exec(selector)) !== null) {
+    const path = m[1];
+    const regexLiteral = m[2];
+    const lastSlash = regexLiteral.lastIndexOf('/');
+    const pattern = regexLiteral.slice(1, lastSlash);
+    const flags = regexLiteral.slice(lastSlash + 1);
+    try {
+      results.push({ path, regex: new RegExp(pattern, flags) });
+    } catch {
+      // Invalid regex — skip rather than crash; esquery will reject it too
+    }
+  }
+  return results;
+}
+
+// Walk a dotted property path (e.g. "callee.property.name", "arguments.0.value")
+// on an AST node and return the string value of the leaf, or undefined if not found.
+export function resolvePath(node: unknown, path: string): string | undefined {
+  const parts = path.split('.');
+  let cur: unknown = node;
+  for (const p of parts) {
+    if (cur == null || typeof cur !== 'object') return undefined;
+    const idx = Number(p);
+    cur = Number.isNaN(idx)
+      ? (cur as Record<string, unknown>)[p]
+      : (cur as unknown[])[idx];
+  }
+  if (cur == null || typeof cur === 'object') return undefined;
+  return String(cur);
 }
 
 function extractFirstLine(source: string, node: Node): string {
@@ -83,6 +134,7 @@ export function runQuery(
   filename = "",
 ): Match[] {
   const expanded = expandShorthands(selector);
+  const regexCaptures = extractRegexCaptures(expanded);
   normalizeOptionalChaining(ast);
   // Cast to any: esquery expects estree.Node but Babel AST is structurally
   // compatible; VISITOR_KEYS ensures correct traversal of Babel-specific nodes.
@@ -90,10 +142,18 @@ export function runQuery(
     visitorKeys: VISITOR_KEYS as Record<string, readonly string[]>,
   });
 
-  return nodes.map((node) => ({
-    file: filename,
-    line: (node as any).loc?.start.line ?? 0,
-    col: (node as any).loc?.start.column ?? 0,
-    source: extractFirstLine(source, node as unknown as Node),
-  }));
+  return nodes.map((node) => {
+    const captureMap: Record<string, string> = {};
+    for (const { path, regex } of regexCaptures) {
+      const val = resolvePath(node, path);
+      if (val !== undefined && regex.test(val)) captureMap[path] = val;
+    }
+    return {
+      file: filename,
+      line: (node as any).loc?.start.line ?? 0,
+      col: (node as any).loc?.start.column ?? 0,
+      source: extractFirstLine(source, node as unknown as Node),
+      ...(Object.keys(captureMap).length > 0 ? { captures: captureMap } : {}),
+    };
+  });
 }

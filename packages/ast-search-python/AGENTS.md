@@ -71,6 +71,34 @@ Python queries use [tree-sitter](https://tree-sitter.github.io/tree-sitter/) S-e
 
 Output formats (`text`, `json`, `files`) work identically to the core tool. See [ast-search AGENTS](../../AGENTS.md#output-formats) for details.
 
+### Captures
+
+Named captures (`@name` in your pattern, excluding `@_`) are included in the `captures` field of each match. The capture key is the name without the `@`.
+
+Text output appends captures after the source line:
+
+```
+src/app.py:5:0: logging.info("user logged in") | fn=logging.info msg="user logged in" call=logging.info("user logged in")
+```
+
+JSON output includes a `captures` field when captures are present:
+
+```json
+{
+  "file": "src/app.py",
+  "line": 5,
+  "col": 0,
+  "source": "logging.info(\"user logged in\")",
+  "captures": {
+    "fn": "logging.info",
+    "msg": "\"user logged in\"",
+    "call": "logging.info(\"user logged in\")"
+  }
+}
+```
+
+All captures from a single pattern application are grouped onto one match — `@fn`, `@msg`, and `@call` from the same query match produce one result, not three.
+
 ---
 
 ## Python Refactoring Patterns
@@ -94,6 +122,18 @@ ast-search 'from' --plugin ast-search-python
 ### Find calls to a specific function by name
 ```bash
 ast-search '(call function: (identifier) @n (#eq? @n "my_func")) @c' --plugin ast-search-python
+```
+
+### Find calls to any logging method and capture the method name and string argument
+```bash
+ast-search '(call function: [(identifier)(attribute)] @fn (#match? @fn "^(log|info|warn|error|debug)") arguments: (argument_list (string) @msg)) @call' --plugin ast-search-python
+# output: ... | fn=logging.info msg="user logged in" call=logging.info("user logged in")
+```
+
+### Find functions whose name matches a regex
+```bash
+ast-search '(function_definition name: (identifier) @name (#match? @name "^handle_")) @fn' --plugin ast-search-python
+# output: ... | name=handle_request fn=def handle_request(...):
 ```
 
 ### Find all decorators
@@ -164,4 +204,4 @@ const matches = await searchRepo('fn', './src');
 - **Unparseable files are silently skipped.** Syntax errors in source files do not abort the search.
 - **`node_modules` is always excluded**, as are files/directories whose names start with `.`.
 - **Verify the AST structure before writing a query.** Python attribute chains like `self.client.send()` nest deeply — `self` is not the direct `object:` of the outer call; `self.client` is. If a predicate query returns no results, first remove the predicate and confirm the base pattern matches what you expect.
-- **`captures()` returns every named capture, not just the outermost.** A query like `(function_definition name: (identifier) @n) @fn` produces two matches per function: one for `@fn` (the whole definition) and one for `@n` (the name identifier). Filter by `source` or capture name if you only want one.
+- **All captures from one pattern match are grouped on a single result.** A query like `(function_definition name: (identifier) @n) @fn` produces one match per function, with both `@fn` and `@n` in the `captures` field. The anchor (location) is the first non-underscore capture — `@fn` in this case.
