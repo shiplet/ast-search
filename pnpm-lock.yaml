@@ -92,8 +92,8 @@ importers:
         specifier: ^20.12.7
         version: 20.19.37
       ast-search-js:
-        specifier: 1.0.1
-        version: 1.0.1
+        specifier: 1.0.2
+        version: 1.0.2
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@20.19.37)
@@ -894,8 +894,8 @@ packages:
     resolution: {integrity: sha512-3CYzex9M9FGQjCGMGyi6/31c8GJbgb0qGyrx5HWxPd0aCwh4cB2YjMb2Xf9UuoogrMrlO9cTqnB5rI5GHZTcUA==}
     engines: {node: '>=0.10.0'}
 
-  ast-search-js@1.0.1:
-    resolution: {integrity: sha512-fZdncsKORldJKSP7dFH+pyfOD5X/hKRz/IROgJ2g+skON7A9dzzrCuULTDw3L7eHkoBjfRyX0nUk/FLhhMN+aw==}
+  ast-search-js@1.0.2:
+    resolution: {integrity: sha512-MNpnlMcXR6FL2gVSjgGBIi8Tyz0CWWBjZhC5mibq0yeqKCYT6e5sxPEYpaoHkmtN+XXxX1l6efE/fcvaHUHTvA==}
     hasBin: true
 
   babel-jest@29.7.0:
@@ -3883,7 +3883,7 @@ snapshots:
 
   arrify@1.0.1: {}
 
-  ast-search-js@1.0.1:
+  ast-search-js@1.0.2:
     dependencies:
       '@babel/parser': 7.29.2
       '@babel/types': 7.29.0
