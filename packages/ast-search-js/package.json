@@ -23,6 +23,23 @@
     "build": "npx tsc && cp build/main.js ast-search",
     "prepublishOnly": "npx tsc"
   },
+  "keywords": [
+    "ast",
+    "ast-search",
+    "code-search",
+    "refactor",
+    "codemod",
+    "esquery",
+    "babel",
+    "javascript",
+    "typescript",
+    "vue",
+    "static-analysis",
+    "cli",
+    "agent",
+    "llm-tool",
+    "mcp"
+  ],
   "publishConfig": {
     "access": "public",
     "provenance": true

@@ -30,4 +30,27 @@ npm install -g ast-search-python
 ast-search <query> [--dir <path>] [--format text|json|files] [--lang <id>] [--plugin <pkg>]
 ```
 
-See each package's README for full query syntax, shorthands, output formats, and the plugin API for adding new languages.
+See each package's README for full query syntax, shorthands, and output formats.
+
+## Plugin API
+
+Language support is plugin-based. The core handles JS/TS/Vue; additional languages are opt-in. To write a plugin, implement the `LanguageBackend` interface exported from `ast-search-js/plugin` and export a `register` function:
+
+```typescript
+import type { LanguageBackend, LanguageRegistry } from 'ast-search-js/plugin';
+
+class MyLanguageBackend implements LanguageBackend {
+  readonly langId = 'mylang';
+  readonly name = 'My Language';
+  readonly extensions = new Set(['.ml']);
+  parse(source: string, filePath: string) { /* return opaque AST */ }
+  query(ast: unknown, selector: string, source: string, filePath: string) { /* return Match[] */ }
+  validateSelector(selector: string) { /* throw on invalid */ }
+}
+
+export function register(registry: LanguageRegistry) {
+  registry.register(new MyLanguageBackend());
+}
+```
+
+Name your package `ast-search-<lang>` and users load it with `--plugin ast-search-<lang>`. See [ast-search-python](packages/ast-search-python/README.md) for a reference implementation.

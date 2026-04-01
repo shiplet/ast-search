@@ -1,8 +1,12 @@
 # ast-search-js
 
-A CLI tool for searching source files using AST patterns, designed to facilitate large-scale refactors.
+[![npm](https://img.shields.io/npm/v/ast-search-js)](https://www.npmjs.com/package/ast-search-js)
+
+Structural code search for JS/TS/Vue — designed for large-scale refactors and AI agent workflows. Finds code by shape, not string.
 
 Accepts a query and searches all supported files under a directory, printing each match with its file path, line, and column. Language support is provided by plugins — the core handles JS/TS/Vue; additional languages are opt-in.
+
+Agents: see [AGENTS.md](./AGENTS.md) for tool descriptions, output format details, and usage patterns.
 
 ## Table of Contents
 
@@ -53,6 +57,15 @@ npm install -g ast-search-js
 # Optional: add Python support
 npm install -g ast-search-python
 ```
+
+## Agent and LLM usage
+
+`ast-search` is designed to work well as a tool in AI agent workflows:
+
+- **Token-efficient** — outputs only match locations, not whole file contents
+- **Machine-readable** — `--format json` returns a structured array ready for parsing
+- **Structurally precise** — selector-based queries eliminate false positives from string matching
+- **Composable** — `--format files` produces a newline-delimited list suitable for piping to `xargs` or subsequent tool calls
 
 ## Usage
 
@@ -146,23 +159,4 @@ For Python support, see [ast-search-python](../ast-search-python/README.md).
 
 ## Plugin API
 
-To write a language plugin, implement the `LanguageBackend` interface exported from `ast-search/plugin` and export a `register` function:
-
-```typescript
-import type { LanguageBackend, LanguageRegistry } from 'ast-search/plugin';
-
-class MyLanguageBackend implements LanguageBackend {
-  readonly langId = 'mylang';
-  readonly name = 'My Language';
-  readonly extensions = new Set(['.ml']);
-  parse(source: string, filePath: string) { /* return opaque AST */ }
-  query(ast: unknown, selector: string, source: string, filePath: string) { /* return Match[] */ }
-  validateSelector(selector: string) { /* throw on invalid */ }
-}
-
-export function register(registry: LanguageRegistry) {
-  registry.register(new MyLanguageBackend());
-}
-```
-
-Name your package `ast-search-<lang>` and users load it with `--plugin ast-search-<lang>`.
+Language support is extensible. See the [Plugin API section in the repository README](https://github.com/willey-shiplet/ast-search#plugin-api) for the `LanguageBackend` interface and instructions for writing a language plugin.
