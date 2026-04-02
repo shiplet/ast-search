@@ -1,3 +1,10 @@
+# ast-search-js [1.1.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.0.3...ast-search-js@1.1.0) (2026-04-02)
+
+
+### Features
+
+* **ast-search:** add support for string literal captures in terminal and other value-based nodes ([#5](https://github.com/willey-shiplet/ast-search/issues/5)) ([e25832c](https://github.com/willey-shiplet/ast-search/commit/e25832cd796b351b033911867d162373c60cbdfc))
+
 ## ast-search-js [1.0.3](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.0.2...ast-search-js@1.0.3) (2026-04-01)
 
 
