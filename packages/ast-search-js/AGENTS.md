@@ -18,6 +18,8 @@ ast-search <query> [--dir <path>] [--format text|json|files] [--lang <id>] [--pl
 | `--format` | `-f` | `text` | Output format: `text`, `json`, or `files` |
 | `--lang` | `-l` | all | Restrict to one language backend by `langId` (e.g. `js`, `python`) |
 | `--plugin` | `-p` | none | Load a language plugin package (repeatable) |
+| `--context` | `-C` | `0` | Show N lines of context around each match (like `grep -C`) |
+| `--ast` | — | off | Print AST for a code snippet (positional arg) or `--file`; useful for writing queries |
 
 **Exit codes:** `0` = matches found · `1` = no matches · `2` = error (invalid selector, etc.)
 

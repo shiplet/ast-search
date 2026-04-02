@@ -16,6 +16,8 @@ ast-search <query> --plugin ast-search-python [--dir <path>] [--format text|json
 | `--dir` | `-d` | `cwd` | Root directory to search |
 | `--format` | `-f` | `text` | Output format: `text`, `json`, or `files` |
 | `--lang` | `-l` | all | Pass `python` to restrict to Python files only |
+| `--context` | `-C` | `0` | Show N lines of context around each match (like `grep -C`) |
+| `--ast` | — | off | Print Python AST for a snippet or `--file`; requires `--lang python` |
 
 **Exit codes:** `0` = matches found · `1` = no matches · `2` = error (invalid selector, etc.)
 

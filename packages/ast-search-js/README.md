@@ -80,6 +80,8 @@ ast-search <query> [--dir <path>] [--format <fmt>] [--lang <id>] [--plugin <pkg>
 | `-f, --format`     | Output format: `text`, `json`, or `files`                     | `text`       |
 | `-l, --lang`       | Restrict search to one language backend (e.g. `js`, `python`) | all languages |
 | `-p, --plugin`     | Load a language plugin package (repeatable)                   | none         |
+| `-C, --context`    | Show N lines of context around each match (like `grep -C`)    | `0`          |
+| `--ast`            | Print AST for a code snippet (positional arg) or `--file`; useful for writing queries | off |
 
 ### Output formats
 
