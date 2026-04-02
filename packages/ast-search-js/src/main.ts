@@ -7,6 +7,7 @@ import { walkRepoFiles } from "./walk.js";
 import { parseFile } from "./file.js";
 import type { Match } from "./types.js";
 import { formatMatches, OutputFormat } from "./output.js";
+import { enrichWithContext } from "./context.js";
 import { defaultRegistry } from "./registry.js";
 import { JSLanguageBackend } from "./backends/js/index.js";
 import { VERSION } from "./version.js";
@@ -144,6 +145,12 @@ const y = yargs(process.argv.slice(2))
           array: true,
           describe: "load a language plugin package (e.g. ast-search-python)",
         })
+        .option("context", {
+          alias: "C",
+          type: "number",
+          describe: "show N lines of context around each match (like grep -C)",
+          default: 0,
+        })
         .option("ast", {
           type: "boolean",
           describe: "print AST structure for a code snippet (positional arg) or --file; useful for writing queries",
@@ -158,7 +165,7 @@ const y = yargs(process.argv.slice(2))
           describe: "line range to extract in --ast --file mode, e.g. 10-20 (1-indexed, inclusive)",
         }),
     async (argv) => {
-      const { query, dir, format, lang, plugin, agentHelp, ast, file, lines } = argv as {
+      const { query, dir, format, lang, plugin, agentHelp, ast, file, lines, context } = argv as {
         query?: string;
         dir: string;
         format: OutputFormat;
@@ -168,6 +175,7 @@ const y = yargs(process.argv.slice(2))
         ast: boolean;
         file?: string;
         lines?: string;
+        context: number;
       };
 
       if (agentHelp) {
@@ -232,7 +240,8 @@ const y = yargs(process.argv.slice(2))
           await backend.validateSelector(query);
         }
 
-        const matches = await searchRepo(query, dir, registry);
+        let matches = await searchRepo(query, dir, registry);
+        if (context > 0) matches = await enrichWithContext(matches, context);
         const isTTY = process.stdout.isTTY ?? false;
         for (const line of formatMatches(matches, isTTY, format)) {
           console.log(line);

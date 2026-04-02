@@ -168,3 +168,100 @@ describe("formatMatches — captures in text format", () => {
     expect(parsed[0].captures).toBeUndefined();
   });
 });
+
+describe("formatMatches — context lines in text format", () => {
+  const withContext: Match = {
+    file: "src/foo.ts",
+    line: 5,
+    col: 3,
+    source: "foo()",
+    contextBefore: ["const x = 1", ""],
+    contextAfter: ["return x", ""],
+  };
+
+  it("context lines use file:N- format (dash, no col)", () => {
+    const lines = formatMatches([withContext], false);
+    expect(lines.some((l) => /src\/foo\.ts:\d+- /.test(l))).toBe(true);
+  });
+
+  it("match line retains file:line:col: format", () => {
+    const lines = formatMatches([withContext], false);
+    expect(lines.some((l) => l.startsWith("src/foo.ts:5:3: "))).toBe(true);
+  });
+
+  it("contextBefore lines appear before match with correct line numbers", () => {
+    const lines = formatMatches([withContext], false);
+    expect(lines[0]).toBe("src/foo.ts:3- const x = 1");
+    expect(lines[1]).toBe("src/foo.ts:4- ");
+    expect(lines[2]).toContain("src/foo.ts:5:3:");
+  });
+
+  it("contextAfter lines appear after match with correct line numbers", () => {
+    const lines = formatMatches([withContext], false);
+    expect(lines[3]).toBe("src/foo.ts:6- return x");
+    expect(lines[4]).toBe("src/foo.ts:7- ");
+  });
+
+  it("inserts -- separator between multiple matches that have context", () => {
+    const m2: Match = { ...withContext, file: "src/bar.ts", line: 2 };
+    const lines = formatMatches([withContext, m2], false);
+    expect(lines).toContain("--");
+  });
+
+  it("-- separator appears between groups, not at start or end", () => {
+    const m2: Match = { ...withContext, file: "src/bar.ts", line: 2 };
+    const lines = formatMatches([withContext, m2], false);
+    const sepIdx = lines.indexOf("--");
+    expect(sepIdx).toBeGreaterThan(0);
+    expect(sepIdx).toBeLessThan(lines.length - 1);
+  });
+
+  it("no -- separator for a single match", () => {
+    const lines = formatMatches([withContext], false);
+    expect(lines).not.toContain("--");
+  });
+
+  it("no -- separator when no match has context", () => {
+    const lines = formatMatches([m, m], false);
+    expect(lines).not.toContain("--");
+  });
+});
+
+describe("formatMatches — context in json format", () => {
+  it("includes contextBefore and contextAfter in JSON when present", () => {
+    const withContext: Match = {
+      file: "f.ts",
+      line: 3,
+      col: 0,
+      source: "x()",
+      contextBefore: ["before"],
+      contextAfter: ["after"],
+    };
+    const [json] = formatMatches([withContext], false, "json");
+    const parsed = JSON.parse(json);
+    expect(parsed[0].contextBefore).toEqual(["before"]);
+    expect(parsed[0].contextAfter).toEqual(["after"]);
+  });
+
+  it("omits contextBefore/contextAfter from JSON when absent", () => {
+    const [json] = formatMatches([m], false, "json");
+    const parsed = JSON.parse(json);
+    expect(parsed[0].contextBefore).toBeUndefined();
+    expect(parsed[0].contextAfter).toBeUndefined();
+  });
+});
+
+describe("formatMatches — files format unaffected by context", () => {
+  it("returns only file paths even when matches have context fields", () => {
+    const withContext: Match = {
+      file: "src/foo.ts",
+      line: 5,
+      col: 3,
+      source: "foo()",
+      contextBefore: ["before"],
+      contextAfter: ["after"],
+    };
+    const lines = formatMatches([withContext], false, "files");
+    expect(lines).toEqual(["src/foo.ts"]);
+  });
+});

@@ -4,4 +4,6 @@ export interface Match {
   col: number;
   source: string;
   captures?: Record<string, string>;
+  contextBefore?: string[];
+  contextAfter?: string[];
 }
