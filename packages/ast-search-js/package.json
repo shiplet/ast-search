@@ -1,6 +1,6 @@
 {
   "name": "ast-search-js",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "AST-based code search for JavaScript, TypeScript, and Vue",
   "main": "build/main.js",
   "exports": {

@@ -1,3 +1,10 @@
+## ast-search-js [1.2.2](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.2.1...ast-search-js@1.2.2) (2026-04-02)
+
+
+### Bug Fixes
+
+* **release:** fix release for ast-search-python ([b34fb59](https://github.com/willey-shiplet/ast-search/commit/b34fb5919c002e4bc14b3eed930a82440cfc7206))
+
 ## ast-search-js [1.2.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.2.0...ast-search-js@1.2.1) (2026-04-02)
 
 
