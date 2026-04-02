@@ -46,7 +46,7 @@
   },
   "type": "module",
   "author": "shiplet",
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/willey-shiplet/ast-search.git",
@@ -67,7 +67,8 @@
     "build/helpers/*.js",
     "build/backends/**/*.js",
     "README.md",
-    "AGENTS.md"
+    "AGENTS.md",
+    "LICENSE"
   ],
   "pkg": {
     "targets": [
