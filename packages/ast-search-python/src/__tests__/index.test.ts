@@ -253,6 +253,47 @@ describe("PythonLanguageBackend.query — raw S-expressions", () => {
   });
 });
 
+describe("PythonLanguageBackend.query — start, end, and source_full", () => {
+  test("matches include numeric start and end byte offsets", async () => {
+    const ast = await backend.parse(FIXTURES.functions, "test.py");
+    const [match] = await backend.query(ast, "fn", FIXTURES.functions, "test.py");
+    expect(typeof match.start).toBe("number");
+    expect(typeof match.end).toBe("number");
+    expect(match.end!).toBeGreaterThan(match.start!);
+  });
+
+  test("start offset is the byte index of the matched node in the source", async () => {
+    const source = "x = 1\ndef foo(): pass\n";
+    const ast = await backend.parse(source, "test.py");
+    const [match] = await backend.query(ast, "fn", source, "test.py");
+    expect(source.slice(match.start!)).toMatch(/^def foo/);
+  });
+
+  test("source_full is present for multi-line function definitions", async () => {
+    const source = "def multi(\n    a,\n    b,\n): pass\n";
+    const ast = await backend.parse(source, "test.py");
+    const [match] = await backend.query(ast, "fn", source, "test.py");
+    expect(match.source_full).toBeDefined();
+    expect(match.source_full).toContain("\n");
+    expect(match.source_full).toContain("pass");
+  });
+
+  test("source_full is omitted for single-line matches", async () => {
+    const source = "x = 1\n";
+    const ast = await backend.parse(source, "test.py");
+    const [match] = await backend.query(ast, "assign", source, "test.py");
+    expect(match.source_full).toBeUndefined();
+  });
+
+  test("source_full matches the source slice defined by start and end", async () => {
+    const source = "def multi(\n    a,\n): pass\n";
+    const ast = await backend.parse(source, "test.py");
+    const [match] = await backend.query(ast, "fn", source, "test.py");
+    expect(match.source_full).toBeDefined();
+    expect(source.slice(match.start!, match.end!)).toBe(match.source_full);
+  });
+});
+
 describe("PythonLanguageBackend.validateSelector", () => {
   test("accepts a valid shorthand", async () => {
     await expect(backend.validateSelector("fn")).resolves.not.toThrow();

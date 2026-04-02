@@ -69,3 +69,45 @@ describe("walkRepoFiles", () => {
     expect(files).toHaveLength(0);
   });
 });
+
+describe("walkRepoFiles — exclude patterns", () => {
+  test("empty exclude array returns same files as no exclude argument", async () => {
+    const withEmpty = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS, []));
+    const withDefault = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS));
+    expect(withEmpty.sort()).toEqual(withDefault.sort());
+  });
+
+  test("excludes a specific file by name", async () => {
+    const files = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS, ["index.ts"]));
+    expect(files).not.toContain("/repo/src/index.ts");
+    expect(files).toContain("/repo/src/utils/helper.js");
+  });
+
+  test("excludes all files in a subdirectory via glob", async () => {
+    const files = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS, ["components/**"]));
+    expect(files).not.toContain("/repo/src/components/Button.tsx");
+    expect(files).toContain("/repo/src/index.ts");
+  });
+
+  test("multiple patterns each exclude their matching files", async () => {
+    const files = await collect(
+      walkRepoFiles("/repo/src", JS_EXTENSIONS, ["index.ts", "utils/**"]),
+    );
+    expect(files).not.toContain("/repo/src/index.ts");
+    expect(files).not.toContain("/repo/src/utils/helper.js");
+    expect(files).toContain("/repo/src/components/Button.tsx");
+  });
+
+  test("wildcard extension pattern excludes matching files", async () => {
+    const files = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS, ["**/*.tsx"]));
+    expect(files).not.toContain("/repo/src/components/Button.tsx");
+    expect(files).toContain("/repo/src/index.ts");
+    expect(files).toContain("/repo/src/utils/helper.js");
+  });
+
+  test("non-matching exclude pattern leaves all files intact", async () => {
+    const all = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS));
+    const filtered = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS, ["**/*.py"]));
+    expect(filtered.sort()).toEqual(all.sort());
+  });
+});

@@ -318,6 +318,54 @@ describe("expandShorthands — regex literal preservation", () => {
   });
 });
 
+describe("runQuery — start, end, and source_full fields", () => {
+  test("single-line match includes numeric start and end offsets", () => {
+    const source = 'console.log("hello");';
+    const ast = getAst(source);
+    const matches = runQuery('CallExpression[callee.property.name="log"]', ast, source);
+    expect(matches).toHaveLength(1);
+    expect(typeof matches[0].start).toBe("number");
+    expect(typeof matches[0].end).toBe("number");
+    expect(matches[0].end!).toBeGreaterThan(matches[0].start!);
+  });
+
+  test("start and end are consistent with slicing the source", () => {
+    const source = 'const x = 1; console.log("hello");';
+    const ast = getAst(source);
+    const matches = runQuery('CallExpression[callee.property.name="log"]', ast, source);
+    expect(matches).toHaveLength(1);
+    const { start, end } = matches[0];
+    expect(source.slice(start, end)).toContain("console.log");
+  });
+
+  test("single-line match omits source_full", () => {
+    const source = 'console.log("hello");';
+    const ast = getAst(source);
+    const matches = runQuery('CallExpression[callee.property.name="log"]', ast, source);
+    expect(matches[0].source_full).toBeUndefined();
+  });
+
+  test("multi-line match includes source_full with full node text", () => {
+    const source = "function foo(\n  a,\n  b\n) { return a + b; }";
+    const ast = getAst(source);
+    const matches = runQuery("FunctionDeclaration", ast, source);
+    expect(matches).toHaveLength(1);
+    expect(matches[0].source).toBe("function foo(");
+    expect(matches[0].source_full).toBeDefined();
+    expect(matches[0].source_full).toContain("\n");
+    expect(matches[0].source_full).toContain("return a + b");
+  });
+
+  test("source_full matches the slice defined by start and end", () => {
+    const source = "function bar(\n  x\n) {}";
+    const ast = getAst(source);
+    const matches = runQuery("FunctionDeclaration", ast, source);
+    expect(matches).toHaveLength(1);
+    const { start, end, source_full } = matches[0];
+    expect(source.slice(start, end)).toBe(source_full);
+  });
+});
+
 describe("extractRegexCaptures", () => {
   test("extracts path and regex from a single matcher", () => {
     const result = extractRegexCaptures('[callee.name=/^log$/]');
