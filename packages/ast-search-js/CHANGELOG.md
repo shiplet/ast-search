@@ -1,3 +1,10 @@
+# ast-search-js [1.3.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.2.3...ast-search-js@1.3.0) (2026-04-02)
+
+
+### Features
+
+* **--count:** add --count flag for exploratory queries ([#10](https://github.com/willey-shiplet/ast-search/issues/10)) ([073559a](https://github.com/willey-shiplet/ast-search/commit/073559a8182e63f3a7becfea4774ee299b657d1f))
+
 ## ast-search-js [1.2.3](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.2.2...ast-search-js@1.2.3) (2026-04-02)
 
 
