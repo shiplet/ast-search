@@ -8,7 +8,7 @@ import {
   reactListNoKey,
   vueSFCOnlyJS,
 } from "./setup";
-import { runQuery, expandShorthands, extractRegexCaptures, resolvePath, normalizeOptionalChaining, Match } from "../search";
+import { runQuery, expandShorthands, extractRegexCaptures, resolvePath, normalizeOptionalChaining, explainSelector, Match } from "../search";
 import { getAst, getAstFromPath } from "../file";
 import { FileHandle } from "node:fs/promises";
 import { File } from "@babel/types";
@@ -496,5 +496,238 @@ describe("runQuery — regex attribute selectors and captures", () => {
     expect(matches).toHaveLength(1);
     // callee.name exists on this node
     expect(matches[0].captures?.["callee.name"]).toBe("foo");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// New shorthands (Session 2)
+// ---------------------------------------------------------------------------
+
+describe("expandShorthands — new entries", () => {
+  test("import expands to ImportDeclaration", () => {
+    expect(expandShorthands("import")).toBe("ImportDeclaration");
+  });
+
+  test("export expands to :matches(...) covering all export types", () => {
+    const expanded = expandShorthands("export");
+    expect(expanded).toContain("ExportNamedDeclaration");
+    expect(expanded).toContain("ExportDefaultDeclaration");
+    expect(expanded).toContain("ExportAllDeclaration");
+    expect(expanded).toMatch(/^:matches\(/);
+  });
+
+  test("class expands to :matches(ClassDeclaration, ClassExpression)", () => {
+    const expanded = expandShorthands("class");
+    expect(expanded).toContain("ClassDeclaration");
+    expect(expanded).toContain("ClassExpression");
+  });
+
+  test("throw expands to ThrowStatement", () => {
+    expect(expandShorthands("throw")).toBe("ThrowStatement");
+  });
+
+  test("typeof expands to UnaryExpression[operator=\"typeof\"]", () => {
+    const expanded = expandShorthands("typeof");
+    expect(expanded).toContain("UnaryExpression");
+    expect(expanded).toContain('operator="typeof"');
+  });
+
+  test("destructure expands to :matches(ObjectPattern, ArrayPattern)", () => {
+    const expanded = expandShorthands("destructure");
+    expect(expanded).toContain("ObjectPattern");
+    expect(expanded).toContain("ArrayPattern");
+  });
+
+  test("decorator expands to Decorator", () => {
+    expect(expandShorthands("decorator")).toBe("Decorator");
+  });
+
+  test("jsx expands to :matches(JSXElement, JSXFragment)", () => {
+    const expanded = expandShorthands("jsx");
+    expect(expanded).toContain("JSXElement");
+    expect(expanded).toContain("JSXFragment");
+  });
+
+  test("new shorthands not expanded inside quoted values", () => {
+    expect(expandShorthands('[name="import"]')).toBe('[name="import"]');
+    expect(expandShorthands('[name="class"]')).toBe('[name="class"]');
+    expect(expandShorthands('[name="throw"]')).toBe('[name="throw"]');
+  });
+
+  test("typeof inside quoted attribute value is not expanded", () => {
+    expect(expandShorthands('[operator="typeof"]')).toBe('[operator="typeof"]');
+  });
+});
+
+describe("runQuery — new shorthands find correct nodes", () => {
+  test("import finds ImportDeclaration", () => {
+    const source = 'import foo from "bar"; import { x } from "baz";';
+    const ast = getAst(source);
+    const matches = runQuery("import", ast, source);
+    expect(matches).toHaveLength(2);
+  });
+
+  test("export finds named and default exports", () => {
+    const source = "export const x = 1; export default function f() {}";
+    const ast = getAst(source);
+    const matches = runQuery("export", ast, source);
+    expect(matches).toHaveLength(2);
+  });
+
+  test("class finds both ClassDeclaration and ClassExpression", () => {
+    const source = "class Dog {}; const Cat = class {};";
+    const ast = getAst(source);
+    const matches = runQuery("class", ast, source);
+    expect(matches).toHaveLength(2);
+  });
+
+  test("throw finds ThrowStatement", () => {
+    const source = "function f() { throw new Error('oops'); }";
+    const ast = getAst(source);
+    const matches = runQuery("throw", ast, source);
+    expect(matches).toHaveLength(1);
+    expect(matches[0].source).toContain("throw");
+  });
+
+  test("typeof finds UnaryExpression with typeof operator", () => {
+    const source = "if (typeof x === 'string') {}";
+    const ast = getAst(source);
+    const matches = runQuery("typeof", ast, source);
+    expect(matches).toHaveLength(1);
+    expect(matches[0].source).toContain("typeof");
+  });
+
+  test("typeof does not match other unary expressions", () => {
+    const source = "const a = !foo; const b = typeof bar;";
+    const ast = getAst(source);
+    const matches = runQuery("typeof", ast, source);
+    expect(matches).toHaveLength(1);
+  });
+
+  test("destructure finds ObjectPattern and ArrayPattern", () => {
+    const source = "const { a, b } = obj; const [c, d] = arr;";
+    const ast = getAst(source);
+    const matches = runQuery("destructure", ast, source);
+    expect(matches).toHaveLength(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// runQuery — showAst option (Session 2)
+// ---------------------------------------------------------------------------
+
+describe("runQuery — showAst option", () => {
+  test("omits astSubtree when showAst is false (default)", () => {
+    const source = "foo(bar)";
+    const ast = getAst(source);
+    const [match] = runQuery("call", ast, source);
+    expect(match.astSubtree).toBeUndefined();
+  });
+
+  test("includes astSubtree string when showAst is true", () => {
+    const source = "foo(bar)";
+    const ast = getAst(source);
+    const [match] = runQuery("call", ast, source, "", true);
+    expect(typeof match.astSubtree).toBe("string");
+    expect(match.astSubtree!.length).toBeGreaterThan(0);
+  });
+
+  test("astSubtree starts with the matched node type", () => {
+    const source = "foo(bar)";
+    const ast = getAst(source);
+    const [match] = runQuery("call", ast, source, "", true);
+    expect(match.astSubtree).toMatch(/^CallExpression/);
+  });
+
+  test("astSubtree contains child node types", () => {
+    const source = "foo(bar)";
+    const ast = getAst(source);
+    const [match] = runQuery("call", ast, source, "", true);
+    expect(match.astSubtree).toContain("Identifier");
+  });
+
+  test("astSubtree is a multi-line string for nodes with children", () => {
+    const source = "foo(a, b, c)";
+    const ast = getAst(source);
+    const [match] = runQuery("call", ast, source, "", true);
+    expect(match.astSubtree!.split("\n").length).toBeGreaterThan(1);
+  });
+
+  test("all matches get astSubtree when showAst is true", () => {
+    const source = "foo(); bar(); baz();";
+    const ast = getAst(source);
+    const matches = runQuery("call", ast, source, "", true);
+    expect(matches).toHaveLength(3);
+    expect(matches.every((m) => typeof m.astSubtree === "string")).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// explainSelector (Session 2)
+// ---------------------------------------------------------------------------
+
+describe("explainSelector", () => {
+  test("explains a simple identifier selector", () => {
+    const desc = explainSelector("CallExpression");
+    expect(desc).toContain("CallExpression");
+    expect(desc).toContain("nodes");
+  });
+
+  test("expands shorthands before explaining", () => {
+    const desc = explainSelector("call");
+    expect(desc).toContain("CallExpression");
+  });
+
+  test("describes a string attribute match", () => {
+    const desc = explainSelector('call[callee.name="foo"]');
+    expect(desc).toContain("callee.name");
+    expect(desc).toContain('"foo"');
+  });
+
+  test("describes a boolean attribute match without quotes", () => {
+    const desc = explainSelector("FunctionDeclaration[async=true]");
+    expect(desc).toContain("async");
+    expect(desc).toMatch(/= true\b/);
+    expect(desc).not.toMatch(/= "true"/);
+  });
+
+  test("describes a regex attribute match", () => {
+    const desc = explainSelector("call[callee.property.name=/^(log|info)$/]");
+    expect(desc).toContain("callee.property.name");
+    expect(desc).toContain("matches");
+  });
+
+  test("describes a descendant combinator", () => {
+    const desc = explainSelector("ObjectMethod this");
+    expect(desc).toContain("ObjectMethod");
+    expect(desc).toContain("ThisExpression");
+    expect(desc).toContain("containing");
+  });
+
+  test("describes :has() as 'containing'", () => {
+    const desc = explainSelector("call:has(arrow)");
+    expect(desc).toContain("containing");
+    expect(desc).toContain("ArrowFunctionExpression");
+  });
+
+  test("describes :not() as 'excluding'", () => {
+    const desc = explainSelector("call:not(arrow)");
+    expect(desc).toContain("excluding");
+  });
+
+  test("describes :matches() with 'or' connective", () => {
+    const desc = explainSelector("export");  // expands to :matches(...)
+    expect(desc).toContain("ExportNamedDeclaration");
+    expect(desc).toContain(" or ");
+  });
+
+  test("explains a child combinator (>)", () => {
+    const desc = explainSelector("FunctionDeclaration > ArrowFunctionExpression");
+    expect(desc).toContain("direct child");
+    expect(desc).toContain("ArrowFunctionExpression");
+  });
+
+  test("throws on invalid selector", () => {
+    expect(() => explainSelector("[(((invalid")).toThrow();
   });
 });
