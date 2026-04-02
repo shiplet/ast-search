@@ -1,3 +1,10 @@
+# ast-search-js [1.4.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.3.0...ast-search-js@1.4.0) (2026-04-02)
+
+
+### Features
+
+* **validate and multi query:** release ([#11](https://github.com/willey-shiplet/ast-search/issues/11)) ([b4b9bd3](https://github.com/willey-shiplet/ast-search/commit/b4b9bd341481c321ab2d60007dcc02bc4a4d39ce))
+
 # ast-search-js [1.3.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.2.3...ast-search-js@1.3.0) (2026-04-02)
 
 
