@@ -1,4 +1,5 @@
 import type { Match } from "ast-search-js/plugin";
+import { printMatchTSNode } from "./ast-print.js";
 
 // web-tree-sitter types (minimal surface we use)
 interface TSNode {
@@ -49,6 +50,7 @@ export function runTreeSitterQuery(
   source: string,
   filePath: string,
   language: unknown,
+  showAst = false,
 ): Match[] {
   assertValidPattern(pattern);
   const tree = ast as TSTree;
@@ -95,6 +97,7 @@ export function runTreeSitterQuery(
       end: anchor.node.endIndex,
       source: firstLine,
       ...(text !== firstLine ? { source_full: text } : {}),
+      ...(showAst ? { astSubtree: printMatchTSNode(anchor.node as any) } : {}),
       ...(Object.keys(captureMap).length > 0 ? { captures: captureMap } : {}),
     });
   }

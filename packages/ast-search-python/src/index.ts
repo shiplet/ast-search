@@ -3,64 +3,14 @@ import path from "path";
 import type { LanguageBackend, LanguageRegistry, Match } from "ast-search-js/plugin";
 import { expandShorthands } from "./shorthands.js";
 import { runTreeSitterQuery, validateTreeSitterQuery } from "./query.js";
+import { printTSNodeText, printMatchTSNode, serializeTSNode, type TSNodeFull } from "./ast-print.js";
+
+export { printMatchTSNode };
 
 const _require = createRequire(import.meta.url);
 
-// Extended tree-sitter node interface used by printAst
-interface TSNodeFull {
-  type: string;
-  isNamed: boolean;
-  text: string;
-  children: TSNodeFull[];
-  startPosition: { row: number; column: number };
-  endPosition: { row: number; column: number };
-  fieldNameForChild(index: number): string | null;
-}
-
 interface TSTreeFull {
   rootNode: TSNodeFull;
-}
-
-function printTSNodeText(node: TSNodeFull, out: string[], indent: string, fieldName?: string): void {
-  const label = fieldName ? `${fieldName}: ${node.type}` : node.type;
-  const namedChildren = node.children.filter((c) => c.isNamed);
-  if (namedChildren.length === 0) {
-    const text = node.text.replace(/\n/g, "\\n");
-    const suffix = text.length <= 60 ? ` [text="${text}"]` : "";
-    out.push(`${indent}${label}${suffix}`);
-  } else {
-    out.push(`${indent}${label}`);
-    for (let i = 0; i < node.children.length; i++) {
-      const child = node.children[i];
-      if (!child.isNamed) continue;
-      const childField = node.fieldNameForChild(i) ?? undefined;
-      printTSNodeText(child, out, indent + "  ", childField);
-    }
-  }
-}
-
-function serializeTSNode(node: TSNodeFull): Record<string, unknown> {
-  const result: Record<string, unknown> = {
-    type: node.type,
-    isNamed: node.isNamed,
-    start: node.startPosition,
-    end: node.endPosition,
-  };
-  const namedChildren: Array<Record<string, unknown>> = [];
-  for (let i = 0; i < node.children.length; i++) {
-    const child = node.children[i];
-    if (!child.isNamed) continue;
-    const fieldName = node.fieldNameForChild(i);
-    const serialized = serializeTSNode(child);
-    if (fieldName) serialized.field = fieldName;
-    namedChildren.push(serialized);
-  }
-  if (namedChildren.length > 0) {
-    result.children = namedChildren;
-  } else {
-    result.text = node.text;
-  }
-  return result;
 }
 
 interface Runtime {
@@ -105,10 +55,10 @@ export class PythonLanguageBackend implements LanguageBackend {
     return parser.parse(source);
   }
 
-  async query(ast: unknown, selector: string, source: string, filePath: string): Promise<Match[]> {
+  async query(ast: unknown, selector: string, source: string, filePath: string, options?: { showAst?: boolean }): Promise<Match[]> {
     const { language } = await getRuntime();
     const expanded = expandShorthands(selector);
-    return runTreeSitterQuery(ast, expanded, source, filePath, language);
+    return runTreeSitterQuery(ast, expanded, source, filePath, language, options?.showAst ?? false);
   }
 
   async validateSelector(selector: string): Promise<void> {

@@ -71,5 +71,11 @@ function formatMatchLines(match: Match, isTTY: boolean): string[] {
     lines.push(`${match.file}:${lineNum}- ${content}`);
   }
 
+  if (match.astSubtree) {
+    for (const astLine of match.astSubtree.split("\n")) {
+      lines.push(`  ${astLine}`);
+    }
+  }
+
   return lines;
 }

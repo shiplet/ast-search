@@ -25,8 +25,8 @@ export class JSLanguageBackend implements LanguageBackend {
     return getAst(content);
   }
 
-  query(ast: unknown, selector: string, source: string, filePath: string): Match[] {
-    return runQuery(selector, ast as File, source, filePath);
+  query(ast: unknown, selector: string, source: string, filePath: string, options?: { showAst?: boolean }): Match[] {
+    return runQuery(selector, ast as File, source, filePath, options?.showAst ?? false);
   }
 
   validateSelector(selector: string): void {

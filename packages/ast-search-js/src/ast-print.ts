@@ -58,6 +58,13 @@ function printNode(node: Node, out: string[], indent: string, propLabel?: string
   }
 }
 
+/** Print the AST subtree rooted at a single matched node (no File/Program wrapper). */
+export function printMatchNode(node: Node): string {
+  const out: string[] = [];
+  printNode(node, out, "", undefined);
+  return out.join("\n");
+}
+
 export function printAstText(ast: File): string {
   const out: string[] = [];
   for (const node of ast.program?.body ?? []) {
