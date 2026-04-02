@@ -76,7 +76,7 @@ importers:
   packages/ast-search-python:
     dependencies:
       ast-search-js:
-        specifier: 1.0.3
+        specifier: ^1.0.0
         version: 1.0.3
       tree-sitter-wasms:
         specifier: ^0.1.12

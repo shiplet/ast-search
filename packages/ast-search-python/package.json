@@ -46,6 +46,6 @@
     "typescript": "^5.4.5"
   },
   "peerDependencies": {
-    "ast-search-js": "1.0.3"
+    "ast-search-js": "^1.0.0"
   }
 }
