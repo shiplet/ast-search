@@ -84,6 +84,23 @@ describe("searchRepo", () => {
     await expect(searchRepo([">>> invalid ::::"], "/")).rejects.toThrow();
   });
 
+  test("exclude: omits files whose relative path matches the pattern", async () => {
+    // ArrowFunctionExpression appears in reactListNoKey.tsx (arrow component)
+    const all = await searchRepo(["ArrowFunctionExpression"], "/");
+    const filtered = await searchRepo(["ArrowFunctionExpression"], "/", undefined, ["reactListNoKey.tsx"]);
+    expect(filtered.every((m) => !m.file.includes("reactListNoKey"))).toBe(true);
+    expect(filtered.length).toBeLessThan(all.length);
+  });
+
+  test("matches include numeric start and end offsets", async () => {
+    const matches = await searchRepo(["FunctionDeclaration"], "/");
+    expect(matches.length).toBeGreaterThan(0);
+    const m = matches[0];
+    expect(typeof m.start).toBe("number");
+    expect(typeof m.end).toBe("number");
+    expect(m.end!).toBeGreaterThan(m.start!);
+  });
+
   test("single query: matches have no query field", async () => {
     const matches = await searchRepo(["FunctionDeclaration"], "/");
     expect(matches.length).toBeGreaterThan(0);
