@@ -9,7 +9,7 @@ Language support is plugin-based. The core handles JS/TS/Vue. For Python support
 ## Invocation
 
 ```
-ast-search <query> [--dir <path>] [--format text|json|files] [--lang <id>] [--plugin <pkg>]
+ast-search <query> [query2 ...] [--dir <path>] [--format text|json|files] [--lang <id>] [--plugin <pkg>]
 ```
 
 | Flag | Alias | Default | Description |
@@ -22,6 +22,12 @@ ast-search <query> [--dir <path>] [--format text|json|files] [--lang <id>] [--pl
 | `--ast` | — | off | Print AST for a code snippet (positional arg) or `--file`; useful for writing queries |
 
 **Exit codes:** `0` = matches found · `1` = no matches · `2` = error (invalid selector, etc.)
+
+**Multi-query:** Pass multiple queries as positional arguments. Each file is parsed once and all queries run against its AST — eliminates redundant I/O when you need several patterns from the same codebase. In `--format json`, every match includes a `query` field. Exit code `0` if any query matches.
+
+```bash
+ast-search 'FunctionDeclaration[async=true]' 'ArrowFunctionExpression[async=true]' --format json
+```
 
 ---
 
@@ -126,7 +132,7 @@ Pattern: `file:line:col: source` — `line` is 1-indexed, `col` is 0-indexed. `s
 ]
 ```
 
-Single pretty-printed JSON array. The `captures` field is present only when the query used regex attribute matchers.
+Single pretty-printed JSON array. The `captures` field is present only when the query used regex attribute matchers. The `query` field is present on every match when multiple queries were provided, identifying which selector produced it.
 
 ### `--format files`
 
@@ -257,12 +263,17 @@ ast-search 'call[callee.name="deprecated"]' --format files | xargs grep -n "depr
 ```typescript
 import { searchRepo } from 'ast-search';
 
-const matches = await searchRepo(selector, dir);
+// Single query
+const matches = await searchRepo(['CallExpression'], dir);
+
+// Multi-query — one repo walk, all queries run per file
+const matches = await searchRepo(['FunctionDeclaration', 'ArrowFunctionExpression'], dir);
 // matches: Array<{
 //   file: string;
 //   line: number;
 //   col: number;
 //   source: string;
+//   query?: string;               // present when multiple selectors were provided
 //   captures?: Record<string, string>;  // present when selector uses /regex/ matchers
 // }>
 ```
@@ -274,7 +285,7 @@ import { defaultRegistry } from 'ast-search/plugin';
 const { register } = await import('ast-search-python');
 register(defaultRegistry);
 
-const matches = await searchRepo(selector, dir);
+const matches = await searchRepo([selector], dir);
 ```
 
 ---
@@ -297,4 +308,4 @@ const matches = await searchRepo(selector, dir);
 - **`col` is 0-indexed.** `line` is 1-indexed. Match this when cross-referencing editor output.
 - **`source` is the first line only**, trimmed. Multi-line nodes (e.g., a full function body) are truncated. Use `--format json` and the `file`/`line`/`col` fields to locate the full node.
 - **JS shorthands expand globally** outside quoted strings and regex literals. Avoid bare shorthand keywords like `new` or `this` in unquoted attribute values — quote them: `[callee.name="this"]`. Regex literals (`/pattern/`) are preserved as-is.
-- **Early selector validation** only runs when a single backend is active (either only core is loaded, or `--lang` is specified). In mixed-language mode, invalid selectors surface as no matches rather than an error at startup.
+- **Early selector validation** only runs when a single backend is active (either only core is loaded, or `--lang` is specified). All provided queries are validated before any file I/O begins. In mixed-language mode, invalid selectors surface as no matches rather than an error at startup.

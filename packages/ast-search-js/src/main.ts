@@ -17,21 +17,30 @@ import { VERSION } from "./version.js";
 defaultRegistry.register(new JSLanguageBackend());
 
 export async function searchRepo(
-  selector: string,
+  selectors: string[],
   dir: string,
   registry = defaultRegistry,
 ): Promise<Match[]> {
   // Early validation when only one backend is registered (common JS-only case)
   if (registry.allBackends.length === 1) {
-    await registry.allBackends[0].validateSelector(selector);
+    for (const selector of selectors) {
+      await registry.allBackends[0].validateSelector(selector);
+    }
   }
 
+  const multiQuery = selectors.length > 1;
   const results: Match[] = [];
   for await (const filePath of walkRepoFiles(dir, registry.allExtensions)) {
     try {
       const { ast, source, backend } = await parseFile(filePath, registry);
-      const matches = await backend.query(ast, selector, source, filePath);
-      results.push(...matches);
+      for (const selector of selectors) {
+        const matches = await backend.query(ast, selector, source, filePath);
+        if (multiQuery) {
+          results.push(...matches.map((m) => ({ ...m, query: selector })));
+        } else {
+          results.push(...matches);
+        }
+      }
     } catch {
       // skip unparseable files / unsupported extensions
     }
@@ -106,15 +115,16 @@ async function runAstMode(opts: {
 
 const y = yargs(process.argv.slice(2))
   .scriptName("ast-search")
-  .usage("$0 <query> [--dir <path>] [--format <fmt>]")
+  .usage("$0 <query> [query2 ...] [--dir <path>] [--format <fmt>]")
   .command(
-    "$0 [query]",
+    "$0 [queries..]",
     "Search a repo for AST patterns using CSS selector syntax",
     (yargs) =>
       yargs
-        .positional("query", {
+        .positional("queries", {
           type: "string",
-          describe: "Query string (esquery CSS selector for JS/TS; tree-sitter S-expression for Python)",
+          array: true,
+          describe: "One or more query strings (esquery CSS selector for JS/TS; tree-sitter S-expression for Python)",
         })
         .option("agent-help", {
           type: "boolean",
@@ -170,8 +180,8 @@ const y = yargs(process.argv.slice(2))
           default: false,
         }),
     async (argv) => {
-      const { query, dir, format, lang, plugin, agentHelp, ast, file, lines, context, validate } = argv as {
-        query?: string;
+      const { queries, dir, format, lang, plugin, agentHelp, ast, file, lines, context, validate } = argv as {
+        queries?: string[];
         dir: string;
         format: OutputFormat;
         lang?: string;
@@ -183,6 +193,7 @@ const y = yargs(process.argv.slice(2))
         context: number;
         validate: boolean;
       };
+      const query = queries?.[0];
 
       if (agentHelp) {
         const scriptDir = dirname(resolve(process.argv[1] ?? ""));
@@ -215,7 +226,7 @@ const y = yargs(process.argv.slice(2))
       }
 
       if (validate) {
-        if (!query) {
+        if (!queries?.length) {
           process.stderr.write("Error: --validate requires a query\n");
           process.exit(2);
         }
@@ -229,41 +240,105 @@ const y = yargs(process.argv.slice(2))
             reg(defaultRegistry);
           }
 
+          const multiQuery = queries.length > 1;
+
           if (lang) {
             const backend = defaultRegistry.getByLangId(lang);
             if (!backend) {
               const available = defaultRegistry.allBackends.map((b) => b.langId).join(", ");
               throw new Error(`Unknown language "${lang}". Available: ${available}`);
             }
-            await backend.validateSelector(query);
-            if (format === "json") {
-              process.stdout.write(JSON.stringify({ valid: true, lang: backend.langId }) + "\n");
-            } else {
-              process.stdout.write(`Query syntax is valid (${backend.name}).\n`);
+            if (!multiQuery) {
+              await backend.validateSelector(queries[0]);
+              if (format === "json") {
+                process.stdout.write(JSON.stringify({ valid: true, lang: backend.langId }) + "\n");
+              } else {
+                process.stdout.write(`Query syntax is valid (${backend.name}).\n`);
+              }
+              process.exit(0);
             }
-            process.exit(0);
+            // multi-query with --lang
+            const queryResults: Array<{ query: string; valid: boolean; error?: string }> = [];
+            for (const q of queries) {
+              try {
+                await backend.validateSelector(q);
+                queryResults.push({ query: q, valid: true });
+              } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err);
+                queryResults.push({ query: q, valid: false, error: msg });
+              }
+            }
+            const allValid = queryResults.every((r) => r.valid);
+            if (format === "json") {
+              process.stdout.write(JSON.stringify({ valid: allValid, lang: backend.langId, queries: queryResults }, null, 2) + "\n");
+            } else {
+              for (const r of queryResults) {
+                process.stdout.write(
+                  r.valid
+                    ? `[${backend.langId}] "${r.query}" is valid.\n`
+                    : `[${backend.langId}] "${r.query}" is invalid: ${r.error}\n`
+                );
+              }
+            }
+            process.exit(allValid ? 0 : 2);
           }
 
-          const validateResults: Array<{ langId: string; name: string; valid: boolean; error?: string }> = [];
-          for (const backend of defaultRegistry.allBackends) {
-            try {
-              await backend.validateSelector(query);
-              validateResults.push({ langId: backend.langId, name: backend.name, valid: true });
-            } catch (err) {
-              const msg = err instanceof Error ? err.message : String(err);
-              validateResults.push({ langId: backend.langId, name: backend.name, valid: false, error: msg });
+          if (!multiQuery) {
+            // Single query, all backends — original behavior
+            const validateResults: Array<{ langId: string; name: string; valid: boolean; error?: string }> = [];
+            for (const backend of defaultRegistry.allBackends) {
+              try {
+                await backend.validateSelector(queries[0]);
+                validateResults.push({ langId: backend.langId, name: backend.name, valid: true });
+              } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err);
+                validateResults.push({ langId: backend.langId, name: backend.name, valid: false, error: msg });
+              }
             }
+            const allValid = validateResults.every((r) => r.valid);
+            if (format === "json") {
+              process.stdout.write(JSON.stringify({ valid: allValid, results: validateResults }, null, 2) + "\n");
+            } else {
+              for (const r of validateResults) {
+                process.stdout.write(
+                  r.valid
+                    ? `[${r.langId}] Query syntax is valid.\n`
+                    : `[${r.langId}] Invalid query: ${r.error}\n`
+                );
+              }
+            }
+            process.exit(allValid ? 0 : 2);
           }
-          const allValid = validateResults.every((r) => r.valid);
+
+          // Multi-query, all backends
+          type LangResult = { langId: string; name: string; valid: boolean; error?: string };
+          type QueryResult = { query: string; valid: boolean; results: LangResult[] };
+          const perQueryResults: QueryResult[] = [];
+          for (const q of queries) {
+            const langResults: LangResult[] = [];
+            for (const backend of defaultRegistry.allBackends) {
+              try {
+                await backend.validateSelector(q);
+                langResults.push({ langId: backend.langId, name: backend.name, valid: true });
+              } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err);
+                langResults.push({ langId: backend.langId, name: backend.name, valid: false, error: msg });
+              }
+            }
+            perQueryResults.push({ query: q, valid: langResults.every((r) => r.valid), results: langResults });
+          }
+          const allValid = perQueryResults.every((r) => r.valid);
           if (format === "json") {
-            process.stdout.write(JSON.stringify({ valid: allValid, results: validateResults }, null, 2) + "\n");
+            process.stdout.write(JSON.stringify({ valid: allValid, queries: perQueryResults }, null, 2) + "\n");
           } else {
-            for (const r of validateResults) {
-              process.stdout.write(
-                r.valid
-                  ? `[${r.langId}] Query syntax is valid.\n`
-                  : `[${r.langId}] Invalid query: ${r.error}\n`
-              );
+            for (const qr of perQueryResults) {
+              for (const r of qr.results) {
+                process.stdout.write(
+                  r.valid
+                    ? `[${r.langId}] "${qr.query}" is valid.\n`
+                    : `[${r.langId}] "${qr.query}" is invalid: ${r.error}\n`
+                );
+              }
             }
           }
           process.exit(allValid ? 0 : 2);
@@ -274,7 +349,7 @@ const y = yargs(process.argv.slice(2))
         }
       }
 
-      if (!query) {
+      if (!queries?.length) {
         process.stderr.write("Error: query is required\n");
         process.exit(2);
       }
@@ -303,10 +378,12 @@ const y = yargs(process.argv.slice(2))
           scoped.register(backend);
           registry = scoped;
           // Always validate early when --lang restricts to a single backend
-          await backend.validateSelector(query);
+          for (const q of queries) {
+            await backend.validateSelector(q);
+          }
         }
 
-        let matches = await searchRepo(query, dir, registry);
+        let matches = await searchRepo(queries, dir, registry);
         if (context > 0) matches = await enrichWithContext(matches, context);
         const isTTY = process.stdout.isTTY ?? false;
         for (const line of formatMatches(matches, isTTY, format)) {
