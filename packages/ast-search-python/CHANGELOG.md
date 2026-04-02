@@ -1,3 +1,10 @@
+## ast-search-python [1.1.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.1.0...ast-search-python@1.1.1) (2026-04-02)
+
+
+### Bug Fixes
+
+* **release:** update release sequencing ([1420529](https://github.com/willey-shiplet/ast-search/commit/1420529c876ba16356892897f168512380efd1ab))
+
 # ast-search-python [1.1.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.7...ast-search-python@1.1.0) (2026-04-02)
 
 
