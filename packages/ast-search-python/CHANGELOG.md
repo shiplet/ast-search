@@ -1,3 +1,19 @@
+# ast-search-python [1.1.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.7...ast-search-python@1.1.0) (2026-04-02)
+
+
+### Bug Fixes
+
+* **ast-search-python:** fix release ([c3f0488](https://github.com/willey-shiplet/ast-search/commit/c3f0488ef7739d2442c740ce7a08c80ebe670818))
+* **release:** debugging release ([d5a3bfa](https://github.com/willey-shiplet/ast-search/commit/d5a3bfa6bf65d0f9990dd0d291199a657ba964f8))
+* **release:** fix release ([#9](https://github.com/willey-shiplet/ast-search/issues/9)) ([9ed938a](https://github.com/willey-shiplet/ast-search/commit/9ed938ad912e1c9d69867cf2e34bca960c73b709))
+* **release:** fix release for ast-search-python ([b34fb59](https://github.com/willey-shiplet/ast-search/commit/b34fb5919c002e4bc14b3eed930a82440cfc7206))
+
+
+### Features
+
+* **ast-flag:** add support for --ast flag ([#7](https://github.com/willey-shiplet/ast-search/issues/7)) ([caa855b](https://github.com/willey-shiplet/ast-search/commit/caa855be52a59a7802451836630285f31e75672f))
+* **ast-search:** add support for string literal captures in terminal and other value-based nodes ([#5](https://github.com/willey-shiplet/ast-search/issues/5)) ([e25832c](https://github.com/willey-shiplet/ast-search/commit/e25832cd796b351b033911867d162373c60cbdfc))
+
 ## ast-search-python [1.0.7](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.0.6...ast-search-python@1.0.7) (2026-04-01)
 
 
