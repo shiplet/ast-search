@@ -1,3 +1,10 @@
+# ast-search-js [1.7.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.6.0...ast-search-js@1.7.0) (2026-04-02)
+
+
+### Features
+
+* **scope metadata, --limit N:** add scope metadata and --limit N flag ([#15](https://github.com/willey-shiplet/ast-search/issues/15)) ([e4199df](https://github.com/willey-shiplet/ast-search/commit/e4199df5a2803fd9f2f18b858190298694206000))
+
 # ast-search-js [1.6.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.5.0...ast-search-js@1.6.0) (2026-04-02)
 
 
