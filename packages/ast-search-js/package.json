@@ -20,7 +20,7 @@
     "debug:empty": "npx tsc && node ./build/main.js 'ValidationsTab > this' --dir src/__tests__/dummyFiles",
     "debug:basics": "npx tsc && node ./build/main.js 'arrowFunction' --dir src/__tests__/dummyFiles",
     "test": "jest --testPathPattern='src/__tests__'",
-    "build": "npx tsc && cp build/main.js ast-search",
+    "build": "npx tsc",
     "prepublishOnly": "npx tsc"
   },
   "keywords": [

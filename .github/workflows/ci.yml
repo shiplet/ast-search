@@ -1,9 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches-ignore:
-      - main
   pull_request:
     branches:
       - main
@@ -19,5 +16,6 @@ jobs:
           node-version: 'lts/*'
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      - run: npx tsc --noEmit
-      - run: npm test
+      - run: pnpm --filter ast-search-js run build
+      - run: pnpm -r exec tsc --noEmit
+      - run: pnpm -r test

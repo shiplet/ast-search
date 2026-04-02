@@ -87,3 +87,84 @@ describe("formatMatches — files format", () => {
     expect(formatMatches([], false, "files")).toEqual([]);
   });
 });
+
+describe("formatMatches — captures in text format", () => {
+  it("appends captures after source with | separator", () => {
+    const match: Match = {
+      file: "src/app.ts",
+      line: 10,
+      col: 0,
+      source: 'logger.info("hello")',
+      captures: { "callee.property.name": "info" },
+    };
+    const [out] = formatMatches([match], false);
+    expect(out).toContain("| callee.property.name=info");
+  });
+
+  it("double-quotes capture values that contain spaces", () => {
+    const match: Match = {
+      file: "src/app.ts",
+      line: 1,
+      col: 0,
+      source: 'log("hello world")',
+      captures: { "arguments.0.value": "hello world" },
+    };
+    const [out] = formatMatches([match], false);
+    expect(out).toContain('arguments.0.value="hello world"');
+  });
+
+  it("does not quote capture values without spaces", () => {
+    const match: Match = {
+      file: "src/app.ts",
+      line: 1,
+      col: 0,
+      source: "log()",
+      captures: { "callee.name": "log" },
+    };
+    const [out] = formatMatches([match], false);
+    expect(out).toContain("callee.name=log");
+    expect(out).not.toContain('callee.name="log"');
+  });
+
+  it("shows multiple captures separated by spaces", () => {
+    const match: Match = {
+      file: "f.ts",
+      line: 1,
+      col: 0,
+      source: "x",
+      captures: { a: "foo", b: "bar" },
+    };
+    const [out] = formatMatches([match], false);
+    expect(out).toContain("a=foo b=bar");
+  });
+
+  it("text format unchanged when captures is absent", () => {
+    const [out] = formatMatches([m], false);
+    expect(out).not.toContain("|");
+  });
+
+  it("text format unchanged when captures is empty (omit field)", () => {
+    const match: Match = { file: "x.ts", line: 1, col: 0, source: "x()" };
+    const [out] = formatMatches([match], false);
+    expect(out).not.toContain("|");
+  });
+
+  it("json format includes captures field when present", () => {
+    const match: Match = {
+      file: "f.ts",
+      line: 1,
+      col: 0,
+      source: "x()",
+      captures: { name: "foo" },
+    };
+    const lines = formatMatches([match], false, "json");
+    const parsed = JSON.parse(lines[0]);
+    expect(parsed[0].captures).toEqual({ name: "foo" });
+  });
+
+  it("json format omits captures field when absent", () => {
+    const lines = formatMatches([m], false, "json");
+    const parsed = JSON.parse(lines[0]);
+    expect(parsed[0].captures).toBeUndefined();
+  });
+});

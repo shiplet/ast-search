@@ -176,3 +176,105 @@ describe("runTreeSitterQuery", () => {
     expect(matches[0].file).toBe("path/to/my_file.py");
   });
 });
+
+describe("runTreeSitterQuery — #match? predicate (regex filtering)", () => {
+  test("#match? filters functions by regex on their name", () => {
+    const source = "def log_event(): pass\ndef process(): pass\n";
+    const ast = simpleParser.parse(source);
+    const matches = runTreeSitterQuery(
+      ast,
+      '(function_definition name: (identifier) @name (#match? @name "^log")) @fn',
+      source,
+      "test.py",
+      language,
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0].source).toContain("log_event");
+  });
+
+  test("#match? with alternation matches multiple variants", () => {
+    const source = "def log_it(): pass\ndef info_it(): pass\ndef debug_it(): pass\n";
+    const ast = simpleParser.parse(source);
+    const matches = runTreeSitterQuery(
+      ast,
+      '(function_definition name: (identifier) @name (#match? @name "^(log|info)")) @fn',
+      source,
+      "test.py",
+      language,
+    );
+    expect(matches).toHaveLength(2);
+    const sources = matches.map((m) => m.source);
+    expect(sources.some((s) => s.includes("log_it"))).toBe(true);
+    expect(sources.some((s) => s.includes("info_it"))).toBe(true);
+  });
+});
+
+describe("runTreeSitterQuery — named captures in output", () => {
+  test("named @captures appear in match.captures", () => {
+    const source = "def greet(): pass\n";
+    const ast = simpleParser.parse(source);
+    const matches = runTreeSitterQuery(
+      ast,
+      "(function_definition name: (identifier) @name) @fn",
+      source,
+      "test.py",
+      language,
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0].captures?.["name"]).toBe("greet");
+    expect(matches[0].captures?.["fn"]).toContain("def greet");
+  });
+
+  test("@_ auto-capture is excluded from captures output", () => {
+    // When user writes bare (function_definition), @_ is auto-appended
+    const matches = runTreeSitterQuery(
+      simpleAst,
+      "(function_definition)",
+      SIMPLE_SOURCE,
+      "test.py",
+      language,
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0].captures).toBeUndefined();
+  });
+
+  test("captures is absent when only @_ is present", () => {
+    const matches = runTreeSitterQuery(
+      simpleAst,
+      "(function_definition) @_myinternal",
+      SIMPLE_SOURCE,
+      "test.py",
+      language,
+    );
+    // @_myinternal starts with _ so should be excluded
+    expect(matches[0].captures).toBeUndefined();
+  });
+
+  test("multiple captures from same pattern match grouped on one Match", () => {
+    const source = 'import logging\nlogging.info("user logged in")\n';
+    const ast = simpleParser.parse(source);
+    const matches = runTreeSitterQuery(
+      ast,
+      "(call function: (attribute) @fn arguments: (argument_list (string) @msg)) @call",
+      source,
+      "test.py",
+      language,
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0].captures?.["fn"]).toBe("logging.info");
+    expect(matches[0].captures?.["msg"]).toBe('"user logged in"');
+    expect(matches[0].captures?.["call"]).toContain("logging.info");
+  });
+
+  test("deduplication still works — same anchor position yields one result", () => {
+    // Two patterns both match the same function_definition node
+    const matches = runTreeSitterQuery(
+      simpleAst,
+      "(function_definition) @a (function_definition) @b",
+      SIMPLE_SOURCE,
+      "test.py",
+      language,
+    );
+    expect(matches).toHaveLength(1);
+  });
+});

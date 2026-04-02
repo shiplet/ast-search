@@ -1,6 +1,7 @@
 node_modules/
 output.json
 /ast-search
+packages/ast-search-js/ast-search
 build/
 coverage/
 .agents

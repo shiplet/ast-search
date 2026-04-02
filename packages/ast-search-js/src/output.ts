@@ -25,5 +25,12 @@ function formatMatch(match: Match, isTTY: boolean): string {
   const loc = `${match.file}:${match.line}:${match.col}`;
   if (!match.source) return loc;
   const src = isTTY ? `${BOLD}${CYAN}${match.source}${RESET}` : match.source;
-  return `${loc}: ${src}`;
+  let line = `${loc}: ${src}`;
+  if (match.captures && Object.keys(match.captures).length > 0) {
+    const capStr = Object.entries(match.captures)
+      .map(([k, v]) => `${k}=${/\s/.test(v) ? `"${v}"` : v}`)
+      .join(' ');
+    line += ` | ${capStr}`;
+  }
+  return line;
 }
