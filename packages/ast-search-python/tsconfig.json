@@ -10,7 +10,10 @@
     "strict": true,
     "noImplicitAny": false,
     "declaration": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "ast-search-js/plugin": ["../ast-search-js/build/plugin"]
+    }
   },
   "include": ["src/**/*.ts"]
 }
