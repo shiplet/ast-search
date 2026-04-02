@@ -163,9 +163,14 @@ const y = yargs(process.argv.slice(2))
         .option("lines", {
           type: "string",
           describe: "line range to extract in --ast --file mode, e.g. 10-20 (1-indexed, inclusive)",
+        })
+        .option("validate", {
+          type: "boolean",
+          description: "Check query syntax without running a search. Exits 0 if valid, 2 if invalid.",
+          default: false,
         }),
     async (argv) => {
-      const { query, dir, format, lang, plugin, agentHelp, ast, file, lines, context } = argv as {
+      const { query, dir, format, lang, plugin, agentHelp, ast, file, lines, context, validate } = argv as {
         query?: string;
         dir: string;
         format: OutputFormat;
@@ -176,6 +181,7 @@ const y = yargs(process.argv.slice(2))
         file?: string;
         lines?: string;
         context: number;
+        validate: boolean;
       };
 
       if (agentHelp) {
@@ -206,6 +212,66 @@ const y = yargs(process.argv.slice(2))
           process.exit(2);
         }
         return;
+      }
+
+      if (validate) {
+        if (!query) {
+          process.stderr.write("Error: --validate requires a query\n");
+          process.exit(2);
+        }
+        try {
+          for (const pkg of plugin ?? []) {
+            const mod = await import(pkg) as { register?: (r: typeof defaultRegistry) => void; default?: { register?: (r: typeof defaultRegistry) => void } };
+            const reg = mod.register ?? mod.default?.register;
+            if (typeof reg !== "function") {
+              throw new Error(`Plugin "${pkg}" does not export a register() function`);
+            }
+            reg(defaultRegistry);
+          }
+
+          if (lang) {
+            const backend = defaultRegistry.getByLangId(lang);
+            if (!backend) {
+              const available = defaultRegistry.allBackends.map((b) => b.langId).join(", ");
+              throw new Error(`Unknown language "${lang}". Available: ${available}`);
+            }
+            await backend.validateSelector(query);
+            if (format === "json") {
+              process.stdout.write(JSON.stringify({ valid: true, lang: backend.langId }) + "\n");
+            } else {
+              process.stdout.write(`Query syntax is valid (${backend.name}).\n`);
+            }
+            process.exit(0);
+          }
+
+          const validateResults: Array<{ langId: string; name: string; valid: boolean; error?: string }> = [];
+          for (const backend of defaultRegistry.allBackends) {
+            try {
+              await backend.validateSelector(query);
+              validateResults.push({ langId: backend.langId, name: backend.name, valid: true });
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : String(err);
+              validateResults.push({ langId: backend.langId, name: backend.name, valid: false, error: msg });
+            }
+          }
+          const allValid = validateResults.every((r) => r.valid);
+          if (format === "json") {
+            process.stdout.write(JSON.stringify({ valid: allValid, results: validateResults }, null, 2) + "\n");
+          } else {
+            for (const r of validateResults) {
+              process.stdout.write(
+                r.valid
+                  ? `[${r.langId}] Query syntax is valid.\n`
+                  : `[${r.langId}] Invalid query: ${r.error}\n`
+              );
+            }
+          }
+          process.exit(allValid ? 0 : 2);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          process.stderr.write(`Error: ${msg}\n`);
+          process.exit(2);
+        }
       }
 
       if (!query) {

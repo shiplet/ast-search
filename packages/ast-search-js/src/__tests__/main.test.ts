@@ -1,6 +1,7 @@
 import { describe, expect, test } from "@jest/globals";
 import { fsMock, vueSFCOnlyJS, reactListNoKey } from "./setup";
 import { searchRepo } from "../main.js";
+import { validateSelector } from "../search.js";
 
 jest.mock("node:fs/promises", () => ({
   ...jest.requireActual("node:fs/promises"),
@@ -81,5 +82,25 @@ describe("searchRepo", () => {
 
   test("throws on invalid selector syntax", async () => {
     await expect(searchRepo(">>> invalid ::::", "/")).rejects.toThrow();
+  });
+});
+
+describe("validateSelector (--validate flag logic)", () => {
+  test("valid type selector does not throw", () => {
+    expect(() => validateSelector("CallExpression")).not.toThrow();
+  });
+
+  test("invalid selector throws", () => {
+    expect(() => validateSelector(">>> invalid ::::")).toThrow();
+  });
+
+  test("JS shorthands are valid", () => {
+    expect(() => validateSelector("call")).not.toThrow();
+    expect(() => validateSelector("fn")).not.toThrow();
+    expect(() => validateSelector("arrow")).not.toThrow();
+  });
+
+  test("compound selector is valid", () => {
+    expect(() => validateSelector("FunctionDeclaration:has(AwaitExpression)")).not.toThrow();
   });
 });
