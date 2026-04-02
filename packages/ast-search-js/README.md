@@ -1,6 +1,6 @@
 # ast-search-js
 
-[![npm](https://img.shields.io/npm/v/ast-search-js)](https://www.npmjs.com/package/ast-search-js)
+[![npm](https://img.shields.io/npm/v/ast-search-js?label=ast-search-js)](https://www.npmjs.com/package/ast-search-js)
 
 Structural code search for JS/TS/Vue — designed for large-scale refactors and AI agent workflows. Finds code by shape, not string.
 

@@ -4,6 +4,7 @@ import type { LanguageBackend } from "../../language.js";
 import type { Match } from "../../types.js";
 import { getAst, parseVueSFC } from "../../file.js";
 import { runQuery, validateSelector as validate, SHORTHANDS, expandShorthands } from "../../search.js";
+import { printAstText, printAstJson } from "../../ast-print.js";
 
 export class JSLanguageBackend implements LanguageBackend {
   readonly langId = "js";
@@ -30,6 +31,12 @@ export class JSLanguageBackend implements LanguageBackend {
 
   validateSelector(selector: string): void {
     validate(selector);
+  }
+
+  printAst(ast: unknown, _source: string, format: "text" | "json"): string {
+    return format === "json"
+      ? printAstJson(ast as File)
+      : printAstText(ast as File);
   }
 }
 

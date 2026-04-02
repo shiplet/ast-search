@@ -2,7 +2,7 @@
 import yargs from "yargs/yargs";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "module";
-import { resolve, dirname } from "node:path";
+import { resolve, dirname, extname } from "node:path";
 import { walkRepoFiles } from "./walk.js";
 import { parseFile } from "./file.js";
 import type { Match } from "./types.js";
@@ -37,6 +37,70 @@ export async function searchRepo(
   }
 
   return results;
+}
+
+async function runAstMode(opts: {
+  query?: string;
+  file?: string;
+  lines?: string;
+  format: string;
+  lang?: string;
+  plugin?: string[];
+}): Promise<void> {
+  const { query, file, lines, format, lang, plugin } = opts;
+
+  for (const pkg of plugin ?? []) {
+    const mod = await import(pkg) as { register?: (r: typeof defaultRegistry) => void; default?: { register?: (r: typeof defaultRegistry) => void } };
+    const reg = mod.register ?? mod.default?.register;
+    if (typeof reg !== "function") {
+      throw new Error(`Plugin "${pkg}" does not export a register() function`);
+    }
+    reg(defaultRegistry);
+  }
+
+  let source: string;
+  let filePath: string;
+
+  if (file) {
+    source = await readFile(file, "utf8");
+    if (lines) {
+      const [startStr, endStr] = lines.split("-");
+      const start = parseInt(startStr, 10) - 1;
+      const end = endStr ? parseInt(endStr, 10) : start + 1;
+      if (isNaN(start) || isNaN(end) || start < 0 || end <= start) {
+        throw new Error(`Invalid --lines value "${lines}". Expected format: N or N-M (e.g. 10-20)`);
+      }
+      source = source.split("\n").slice(start, end).join("\n");
+    }
+    filePath = file;
+  } else if (query) {
+    source = query;
+    // Infer a plausible file extension for the backend to key on
+    filePath = lang === "python" ? "snippet.py" : "snippet.ts";
+  } else {
+    throw new Error("--ast requires a code snippet (positional arg) or --file <path>");
+  }
+
+  let backend = lang
+    ? defaultRegistry.getByLangId(lang)
+    : file
+      ? defaultRegistry.getByExtension(extname(file))
+      : defaultRegistry.getByLangId("js");
+
+  if (!backend) {
+    const available = defaultRegistry.allBackends.map((b) => b.langId).join(", ");
+    const hint = lang ? ` Did you forget --plugin?` : "";
+    throw new Error(`No backend found for "${lang ?? extname(file ?? "")}"${hint} Available: ${available}`);
+  }
+
+  if (!backend.printAst) {
+    throw new Error(`Backend "${backend.langId}" does not support --ast mode`);
+  }
+
+  const ast = await backend.parse(source, filePath);
+  const fmt = format === "json" ? "json" : "text";
+  process.stdout.write(backend.printAst(ast, source, fmt) + "\n");
+  process.exit(0);
 }
 
 const y = yargs(process.argv.slice(2))
@@ -79,15 +143,31 @@ const y = yargs(process.argv.slice(2))
           type: "string",
           array: true,
           describe: "load a language plugin package (e.g. ast-search-python)",
+        })
+        .option("ast", {
+          type: "boolean",
+          describe: "print AST structure for a code snippet (positional arg) or --file; useful for writing queries",
+          default: false,
+        })
+        .option("file", {
+          type: "string",
+          describe: "source file to parse in --ast mode",
+        })
+        .option("lines", {
+          type: "string",
+          describe: "line range to extract in --ast --file mode, e.g. 10-20 (1-indexed, inclusive)",
         }),
     async (argv) => {
-      const { query, dir, format, lang, plugin, agentHelp } = argv as {
+      const { query, dir, format, lang, plugin, agentHelp, ast, file, lines } = argv as {
         query?: string;
         dir: string;
         format: OutputFormat;
         lang?: string;
         plugin?: string[];
         agentHelp: boolean;
+        ast: boolean;
+        file?: string;
+        lines?: string;
       };
 
       if (agentHelp) {
@@ -107,6 +187,17 @@ const y = yargs(process.argv.slice(2))
           }
         }
         process.exit(0);
+      }
+
+      if (ast) {
+        try {
+          await runAstMode({ query, file, lines, format, lang, plugin });
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          process.stderr.write(`Error: ${msg}\n`);
+          process.exit(2);
+        }
+        return;
       }
 
       if (!query) {
