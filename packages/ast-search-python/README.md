@@ -35,7 +35,7 @@ ast-search <query> --plugin ast-search-python [--dir <path>] [--format <fmt>] [-
 | -------------- | -------------------------------------------------------------- | ----------- |
 | `<query>`      | Shorthand or tree-sitter S-expression (see Query Syntax below) | required    |
 | `-d, --dir`    | Root directory to search                                       | current dir |
-| `-f, --format` | Output format: `text`, `json`, or `files`                      | `text`      |
+| `-f, --format` | Output format: `text`, `json`, `files`, or `count`             | `text`      |
 | `-l, --lang`   | Restrict search to `python` only (useful in mixed-language repos) | all languages |
 | `-p, --plugin` | `ast-search-python`                                            | required    |
 | `-C, --context` | Show N lines of context around each match (like `grep -C`)   | `0`         |

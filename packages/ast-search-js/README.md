@@ -77,7 +77,7 @@ ast-search <query> [--dir <path>] [--format <fmt>] [--lang <id>] [--plugin <pkg>
 | ------------------ | ------------------------------------------------------------- | ------------ |
 | `<query>`          | Query string (see Query Syntax below)                         | required     |
 | `-d, --dir`        | Root directory to search                                      | current dir  |
-| `-f, --format`     | Output format: `text`, `json`, or `files`                     | `text`       |
+| `-f, --format`     | Output format: `text`, `json`, `files`, or `count`            | `text`       |
 | `-l, --lang`       | Restrict search to one language backend (e.g. `js`, `python`) | all languages |
 | `-p, --plugin`     | Load a language plugin package (repeatable)                   | none         |
 | `-C, --context`    | Show N lines of context around each match (like `grep -C`)    | `0`          |
@@ -88,6 +88,7 @@ ast-search <query> [--dir <path>] [--format <fmt>] [--lang <id>] [--plugin <pkg>
 - **`text`** (default) — one match per line as `file:line:col: source`; when the query uses regex matchers, captured values are appended after ` | `
 - **`files`** — unique file paths only, one per line; useful for piping to `xargs`
 - **`json`** — full match array as JSON; includes a `captures` field when regex matchers were used
+- **`count`** — per-file match counts sorted by frequency, plus a summary line; useful for scoping a refactor before running a full search
 
 ## Query syntax
 

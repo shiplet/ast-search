@@ -132,7 +132,7 @@ const y = yargs(process.argv.slice(2))
           type: "string",
           describe: "output format: text (default), json, files",
           default: "text",
-          choices: ["text", "json", "files"],
+          choices: ["text", "json", "files", "count"],
         })
         .option("lang", {
           alias: "l",

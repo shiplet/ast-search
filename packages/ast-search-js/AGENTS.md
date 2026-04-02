@@ -15,7 +15,7 @@ ast-search <query> [--dir <path>] [--format text|json|files] [--lang <id>] [--pl
 | Flag | Alias | Default | Description |
 |------|-------|---------|-------------|
 | `--dir` | `-d` | `cwd` | Root directory to search |
-| `--format` | `-f` | `text` | Output format: `text`, `json`, or `files` |
+| `--format` | `-f` | `text` | Output format: `text`, `json`, `files`, or `count` |
 | `--lang` | `-l` | all | Restrict to one language backend by `langId` (e.g. `js`, `python`) |
 | `--plugin` | `-p` | none | Load a language plugin package (repeatable) |
 | `--context` | `-C` | `0` | Show N lines of context around each match (like `grep -C`) |
@@ -136,6 +136,18 @@ src/components/Bar.ts
 ```
 
 Deduplicated file paths, one per line. Use for batch operations.
+
+### `--format count`
+
+```
+src/components/Foo.vue: 12
+src/utils/helper.ts: 5
+src/components/Bar.ts: 3
+
+20 matches across 3 files
+```
+
+Per-file match counts sorted by frequency (descending), followed by a summary line. Use to scope a refactor before committing to a full search.
 
 ---
 
