@@ -66,16 +66,19 @@ npm install -g ast-search-python
 - **Machine-readable** — `--format json` returns a structured array ready for parsing
 - **Structurally precise** — selector-based queries eliminate false positives from string matching
 - **Composable** — `--format files` produces a newline-delimited list suitable for piping to `xargs` or subsequent tool calls
+- **Multi-query** — pass multiple queries in one invocation; each file is parsed once and all queries run against it, eliminating redundant I/O
 
 ## Usage
 
 ```
-ast-search <query> [--dir <path>] [--format <fmt>] [--lang <id>] [--plugin <pkg>]
+ast-search <query> [query2 ...] [--dir <path>] [--format <fmt>] [--lang <id>] [--plugin <pkg>]
 ```
+
+Multiple queries can be passed as positional arguments. All queries run against each file's AST in a single repo walk — each file is parsed once regardless of how many queries you provide. In `--format json`, every match includes a `query` field identifying which selector produced it.
 
 | Argument           | Description                                                   | Default      |
 | ------------------ | ------------------------------------------------------------- | ------------ |
-| `<query>`          | Query string (see Query Syntax below)                         | required     |
+| `<query> [query2 ...]` | One or more query strings (see Query Syntax below)        | required     |
 | `-d, --dir`        | Root directory to search                                      | current dir  |
 | `-f, --format`     | Output format: `text`, `json`, `files`, or `count`            | `text`       |
 | `-l, --lang`       | Restrict search to one language backend (e.g. `js`, `python`) | all languages |

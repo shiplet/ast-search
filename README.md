@@ -30,7 +30,7 @@ npm install -g ast-search-python
 ```
 
 ```
-ast-search <query> [--dir <path>] [--format text|json|files] [--lang <id>] [--plugin <pkg>]
+ast-search <query> [query2 ...] [--dir <path>] [--format text|json|files] [--lang <id>] [--plugin <pkg>]
 ```
 
 See each package's README for full query syntax, shorthands, and output formats.
