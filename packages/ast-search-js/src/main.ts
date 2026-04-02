@@ -6,10 +6,10 @@ import { resolve, dirname, extname } from "node:path";
 import { walkRepoFiles } from "./walk.js";
 import { parseFile } from "./file.js";
 import type { Match } from "./types.js";
-import { formatMatches, OutputFormat } from "./output.js";
+import { formatMatches, type OutputFormat, type SearchMeta } from "./output.js";
 import { explainSelector } from "./search.js";
 import { enrichWithContext } from "./context.js";
-import { defaultRegistry } from "./registry.js";
+import { defaultRegistry, type LanguageRegistry } from "./registry.js";
 import { JSLanguageBackend } from "./backends/js/index.js";
 import { VERSION } from "./version.js";
 
@@ -17,13 +17,19 @@ import { VERSION } from "./version.js";
 // Register built-in JS/TS/Vue backend
 defaultRegistry.register(new JSLanguageBackend());
 
-export async function searchRepo(
+export interface SearchRepoResult {
+  matches: Match[];
+  filesSearched: number;
+  truncated: boolean;
+}
+
+async function searchRepoFull(
   selectors: string[],
   dir: string,
-  registry = defaultRegistry,
-  exclude: string[] = [],
-  options: { showAst?: boolean } = {},
-): Promise<Match[]> {
+  registry: LanguageRegistry,
+  exclude: string[],
+  options: { showAst?: boolean; limit?: number } = {},
+): Promise<SearchRepoResult> {
   // Early validation when only one backend is registered (common JS-only case)
   if (registry.allBackends.length === 1) {
     for (const selector of selectors) {
@@ -33,11 +39,16 @@ export async function searchRepo(
 
   const multiQuery = selectors.length > 1;
   const results: Match[] = [];
+  let filesSearched = 0;
+  let truncated = false;
+  const { limit, ...queryOptions } = options;
+
   for await (const filePath of walkRepoFiles(dir, registry.allExtensions, exclude)) {
+    filesSearched++;
     try {
       const { ast, source, backend } = await parseFile(filePath, registry);
       for (const selector of selectors) {
-        const matches = await backend.query(ast, selector, source, filePath, options);
+        const matches = await backend.query(ast, selector, source, filePath, queryOptions);
         if (multiQuery) {
           results.push(...matches.map((m) => ({ ...m, query: selector })));
         } else {
@@ -47,9 +58,36 @@ export async function searchRepo(
     } catch {
       // skip unparseable files / unsupported extensions
     }
+
+    if (limit !== undefined && results.length >= limit) {
+      truncated = true;
+      break;
+    }
   }
 
-  return results;
+  const matches = limit !== undefined ? results.slice(0, limit) : results;
+  return { matches, filesSearched, truncated };
+}
+
+export async function searchRepoWithMeta(
+  selectors: string[],
+  dir: string,
+  registry = defaultRegistry,
+  exclude: string[] = [],
+  options: { showAst?: boolean; limit?: number } = {},
+): Promise<SearchRepoResult> {
+  return searchRepoFull(selectors, dir, registry, exclude, options);
+}
+
+export async function searchRepo(
+  selectors: string[],
+  dir: string,
+  registry = defaultRegistry,
+  exclude: string[] = [],
+  options: { showAst?: boolean } = {},
+): Promise<Match[]> {
+  const { matches } = await searchRepoFull(selectors, dir, registry, exclude, options);
+  return matches;
 }
 
 async function runAstMode(opts: {
@@ -193,9 +231,14 @@ const y = yargs(process.argv.slice(2))
           type: "boolean",
           description: "Check query syntax without running a search. Exits 0 if valid, 2 if invalid.",
           default: false,
+        })
+        .option("limit", {
+          alias: "n",
+          type: "number",
+          describe: "stop after N matches (useful for exploratory queries on large repos)",
         }),
     async (argv) => {
-      const { queries, dir, format, lang, plugin, agentHelp, ast, file, lines, context, validate, exclude, showAst } = argv as {
+      const { queries, dir, format, lang, plugin, agentHelp, ast, file, lines, context, validate, exclude, showAst, limit } = argv as {
         queries?: string[];
         dir: string;
         format: OutputFormat;
@@ -209,6 +252,7 @@ const y = yargs(process.argv.slice(2))
         validate: boolean;
         exclude: string[];
         showAst: boolean;
+        limit?: number;
       };
       const query = queries?.[0];
 
@@ -410,10 +454,20 @@ const y = yargs(process.argv.slice(2))
           }
         }
 
-        let matches = await searchRepo(queries, dir, registry, exclude, { showAst });
+        const startMs = Date.now();
+        const { matches: rawMatches, filesSearched, truncated } = await searchRepoFull(queries, dir, registry, exclude, { showAst, limit });
+        let matches = rawMatches;
+        const wallMs = Date.now() - startMs;
         if (context > 0) matches = await enrichWithContext(matches, context);
+        const meta: SearchMeta = {
+          matchCount: matches.length,
+          filesSearched,
+          wallMs,
+          queries,
+          truncated,
+        };
         const isTTY = process.stdout.isTTY ?? false;
-        for (const line of formatMatches(matches, isTTY, format)) {
+        for (const line of formatMatches(matches, isTTY, format, meta)) {
           console.log(line);
         }
         process.exit(matches.length > 0 ? 0 : 1);

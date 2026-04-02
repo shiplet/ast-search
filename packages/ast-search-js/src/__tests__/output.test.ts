@@ -1,5 +1,5 @@
 import { describe, it, expect } from "@jest/globals";
-import { formatMatches } from "../output.js";
+import { formatMatches, type SearchMeta } from "../output.js";
 import type { Match } from "../search.js";
 
 const m: Match = { file: "src/foo.ts", line: 42, col: 7, source: "const x = () => {}" };
@@ -69,6 +69,87 @@ describe("formatMatches — json format", () => {
   it("returns empty JSON array for no matches", () => {
     const lines = formatMatches([], false, "json");
     expect(JSON.parse(lines[0])).toEqual([]);
+  });
+});
+
+const baseMeta: SearchMeta = {
+  matchCount: 1,
+  filesSearched: 10,
+  wallMs: 42,
+  queries: ["FunctionDeclaration"],
+  truncated: false,
+};
+
+describe("formatMatches — json format with meta", () => {
+  it("wraps matches under 'matches' key when meta is provided", () => {
+    const [json] = formatMatches([m], false, "json", baseMeta);
+    const parsed = JSON.parse(json);
+    expect(Array.isArray(parsed.matches)).toBe(true);
+    expect(parsed.matches[0].file).toBe("src/foo.ts");
+  });
+
+  it("includes _meta object at top level", () => {
+    const [json] = formatMatches([m], false, "json", baseMeta);
+    const parsed = JSON.parse(json);
+    expect(parsed._meta).toBeDefined();
+    expect(parsed._meta.matchCount).toBe(1);
+    expect(parsed._meta.filesSearched).toBe(10);
+    expect(parsed._meta.wallMs).toBe(42);
+    expect(parsed._meta.queries).toEqual(["FunctionDeclaration"]);
+    expect(parsed._meta.truncated).toBe(false);
+  });
+
+  it("reflects truncated: true in _meta when limit was reached", () => {
+    const [json] = formatMatches([m], false, "json", { ...baseMeta, truncated: true });
+    const parsed = JSON.parse(json);
+    expect(parsed._meta.truncated).toBe(true);
+  });
+
+  it("matches array is empty when no matches but meta is provided", () => {
+    const [json] = formatMatches([], false, "json", { ...baseMeta, matchCount: 0 });
+    const parsed = JSON.parse(json);
+    expect(parsed.matches).toEqual([]);
+    expect(parsed._meta.matchCount).toBe(0);
+  });
+});
+
+describe("formatMatches — truncation notices", () => {
+  const truncatedMeta: SearchMeta = { ...baseMeta, truncated: true, matchCount: 5 };
+
+  it("text format appends truncation notice when truncated", () => {
+    const lines = formatMatches([m], false, "text", truncatedMeta);
+    expect(lines[lines.length - 1]).toContain("truncated");
+    expect(lines[lines.length - 1]).toContain("5");
+  });
+
+  it("text format has no truncation notice when not truncated", () => {
+    const lines = formatMatches([m], false, "text", baseMeta);
+    expect(lines.every((l) => !l.includes("truncated"))).toBe(true);
+  });
+
+  it("files format appends truncation notice when truncated", () => {
+    const lines = formatMatches([m], false, "files", truncatedMeta);
+    expect(lines[lines.length - 1]).toContain("truncated");
+  });
+
+  it("files format has no truncation notice when not truncated", () => {
+    const lines = formatMatches([m], false, "files", baseMeta);
+    expect(lines.every((l) => !l.includes("truncated"))).toBe(true);
+  });
+
+  it("count format summary includes '(truncated)' when truncated", () => {
+    const matches: Match[] = [
+      { file: "a.ts", line: 1, col: 0, source: "x" },
+      { file: "b.ts", line: 2, col: 0, source: "y" },
+    ];
+    const lines = formatMatches(matches, false, "count", truncatedMeta);
+    expect(lines[lines.length - 1]).toContain("(truncated)");
+  });
+
+  it("count format summary has no '(truncated)' when not truncated", () => {
+    const matches: Match[] = [{ file: "a.ts", line: 1, col: 0, source: "x" }];
+    const lines = formatMatches(matches, false, "count", baseMeta);
+    expect(lines[lines.length - 1]).not.toContain("(truncated)");
   });
 });
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "@jest/globals";
 import { fsMock, vueSFCOnlyJS, reactListNoKey } from "./setup";
-import { searchRepo } from "../main.js";
+import { searchRepo, searchRepoWithMeta } from "../main.js";
 import { validateSelector } from "../search.js";
 
 jest.mock("node:fs/promises", () => ({
@@ -133,6 +133,48 @@ describe("searchRepo", () => {
   test("multi-query: returns empty array when no query matches", async () => {
     const matches = await searchRepo(["DebuggerStatement", "LabeledStatement"], "/");
     expect(matches).toHaveLength(0);
+  });
+});
+
+describe("searchRepoWithMeta — limit and metadata", () => {
+  test("returns matches, filesSearched, and truncated fields", async () => {
+    const result = await searchRepoWithMeta(["FunctionDeclaration"], "/");
+    expect(Array.isArray(result.matches)).toBe(true);
+    expect(typeof result.filesSearched).toBe("number");
+    expect(typeof result.truncated).toBe("boolean");
+  });
+
+  test("truncated is false when no limit is set", async () => {
+    const { truncated } = await searchRepoWithMeta(["FunctionDeclaration"], "/");
+    expect(truncated).toBe(false);
+  });
+
+  test("limit caps the number of results returned", async () => {
+    const all = await searchRepoWithMeta(["FunctionDeclaration"], "/");
+    if (all.matches.length < 2) return;
+    const limited = await searchRepoWithMeta(["FunctionDeclaration"], "/", undefined, [], { limit: 1 });
+    expect(limited.matches.length).toBe(1);
+  });
+
+  test("truncated is true when limit is hit before all files are processed", async () => {
+    const all = await searchRepoWithMeta(["FunctionDeclaration"], "/");
+    if (all.matches.length < 2) return;
+    const limited = await searchRepoWithMeta(["FunctionDeclaration"], "/", undefined, [], { limit: 1 });
+    expect(limited.truncated).toBe(true);
+  });
+
+  test("filesSearched is less than total files when truncated", async () => {
+    const all = await searchRepoWithMeta(["FunctionDeclaration"], "/");
+    if (all.matches.length < 2) return;
+    const limited = await searchRepoWithMeta(["FunctionDeclaration"], "/", undefined, [], { limit: 1 });
+    expect(limited.filesSearched).toBeLessThanOrEqual(all.filesSearched);
+  });
+
+  test("truncated is false when results fit within limit", async () => {
+    const all = await searchRepoWithMeta(["FunctionDeclaration"], "/");
+    const bigLimit = await searchRepoWithMeta(["FunctionDeclaration"], "/", undefined, [], { limit: all.matches.length + 100 });
+    expect(bigLimit.truncated).toBe(false);
+    expect(bigLimit.matches.length).toBe(all.matches.length);
   });
 });
 
