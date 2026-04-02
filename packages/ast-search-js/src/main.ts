@@ -512,6 +512,10 @@ const y = yargs(process.argv.slice(2))
   .alias("version", "V")
   .help();
 
-if (process.env.NODE_ENV !== "test") {
+export function runCli(): void {
   y.parse();
 }
+
+export { defaultRegistry } from "./registry.js";
+export { explainSelector } from "./search.js";
+export { enrichWithContext } from "./context.js";
