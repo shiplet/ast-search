@@ -251,6 +251,55 @@ describe("formatMatches — context in json format", () => {
   });
 });
 
+describe("formatMatches — count format", () => {
+  it("returns empty array for no matches", () => {
+    expect(formatMatches([], false, "count")).toEqual([]);
+  });
+
+  it("shows file: N line and summary for a single file", () => {
+    const matches: Match[] = [
+      { file: "src/foo.ts", line: 1, col: 0, source: "x()" },
+      { file: "src/foo.ts", line: 5, col: 0, source: "y()" },
+    ];
+    const lines = formatMatches(matches, false, "count");
+    expect(lines[0]).toBe("src/foo.ts: 2");
+    expect(lines[lines.length - 1]).toBe("2 matches across 1 file");
+  });
+
+  it("sorts files descending by match count", () => {
+    const matches: Match[] = [
+      { file: "a.ts", line: 1, col: 0, source: "x" },
+      { file: "b.ts", line: 1, col: 0, source: "x" },
+      { file: "b.ts", line: 2, col: 0, source: "x" },
+      { file: "b.ts", line: 3, col: 0, source: "x" },
+    ];
+    const lines = formatMatches(matches, false, "count");
+    expect(lines[0]).toBe("b.ts: 3");
+    expect(lines[1]).toBe("a.ts: 1");
+  });
+
+  it("emits a blank line before the summary", () => {
+    const matches: Match[] = [{ file: "a.ts", line: 1, col: 0, source: "x" }];
+    const lines = formatMatches(matches, false, "count");
+    expect(lines[lines.length - 2]).toBe("");
+  });
+
+  it("uses singular 'match' and 'file' for a single match in one file", () => {
+    const matches: Match[] = [{ file: "a.ts", line: 1, col: 0, source: "x" }];
+    const lines = formatMatches(matches, false, "count");
+    expect(lines[lines.length - 1]).toBe("1 match across 1 file");
+  });
+
+  it("uses plural 'matches' and 'files' for multiple matches across multiple files", () => {
+    const matches: Match[] = [
+      { file: "a.ts", line: 1, col: 0, source: "x" },
+      { file: "b.ts", line: 2, col: 0, source: "y" },
+    ];
+    const lines = formatMatches(matches, false, "count");
+    expect(lines[lines.length - 1]).toBe("2 matches across 2 files");
+  });
+});
+
 describe("formatMatches — files format unaffected by context", () => {
   it("returns only file paths even when matches have context fields", () => {
     const withContext: Match = {

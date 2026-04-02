@@ -14,7 +14,7 @@ ast-search <query> --plugin ast-search-python [--dir <path>] [--format text|json
 |------|-------|---------|-------------|
 | `--plugin` | `-p` | — | Must be `ast-search-python` to activate Python support |
 | `--dir` | `-d` | `cwd` | Root directory to search |
-| `--format` | `-f` | `text` | Output format: `text`, `json`, or `files` |
+| `--format` | `-f` | `text` | Output format: `text`, `json`, `files`, or `count` |
 | `--lang` | `-l` | all | Pass `python` to restrict to Python files only |
 | `--context` | `-C` | `0` | Show N lines of context around each match (like `grep -C`) |
 | `--ast` | — | off | Print Python AST for a snippet or `--file`; requires `--lang python` |

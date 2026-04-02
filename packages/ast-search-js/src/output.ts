@@ -4,7 +4,7 @@ const BOLD = "\x1b[1m";
 const CYAN = "\x1b[36m";
 const RESET = "\x1b[0m";
 
-export type OutputFormat = "text" | "json" | "files";
+export type OutputFormat = "text" | "json" | "files" | "count";
 
 export function formatMatches(
   matches: Match[],
@@ -17,6 +17,19 @@ export function formatMatches(
   if (format === "files") {
     const seen = new Set<string>();
     return matches.map((m) => m.file).filter((f) => !seen.has(f) && !!seen.add(f));
+  }
+  if (format === "count") {
+    if (matches.length === 0) return [];
+    const counts = new Map<string, number>();
+    for (const m of matches) counts.set(m.file, (counts.get(m.file) ?? 0) + 1);
+    const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    const lines = sorted.map(([file, n]) => `${file}: ${n}`);
+    const totalMatches = matches.length;
+    const totalFiles = counts.size;
+    const mWord = totalMatches === 1 ? "match" : "matches";
+    const fWord = totalFiles === 1 ? "file" : "files";
+    lines.push("", `${totalMatches} ${mWord} across ${totalFiles} ${fWord}`);
+    return lines;
   }
 
   const hasContext = matches.some((m) => m.contextBefore !== undefined || m.contextAfter !== undefined);
