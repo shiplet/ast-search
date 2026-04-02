@@ -1,0 +1,50 @@
+{
+  "name": "ast-search-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for ast-search — structural code search for AI agents",
+  "type": "module",
+  "bin": {
+    "ast-search-mcp": "./build/index.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./build/index.js",
+      "types": "./build/index.d.ts"
+    }
+  },
+  "author": "shiplet",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/willey-shiplet/ast-search.git",
+    "directory": "packages/ast-search-mcp"
+  },
+  "files": [
+    "build/*.js",
+    "build/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "npx tsc",
+    "test": "jest --testPathPattern='src/__tests__'",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "ast-search-js": "workspace:^",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.12.7",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.0.0"
+  }
+}

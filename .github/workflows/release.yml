@@ -54,7 +54,7 @@ jobs:
         run: pnpm audit --prod signatures
 
       - name: Build
-        run: pnpm --filter ast-search-js run build && pnpm --filter ast-search-python run build
+        run: pnpm --filter ast-search-js run build && pnpm --filter ast-search-python run build && pnpm --filter ast-search-mcp run build
 
       - name: Release
         env:
