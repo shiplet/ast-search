@@ -1,3 +1,10 @@
+# ast-search-python [1.3.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.2.0...ast-search-python@1.3.0) (2026-04-02)
+
+
+### Features
+
+* **Edit & --exclude:** add edit markers to result format and --exclude flag ([#12](https://github.com/willey-shiplet/ast-search/issues/12)) ([7a14a73](https://github.com/willey-shiplet/ast-search/commit/7a14a73554f1671222fb50f3b8bcd00dbb24ba3b))
+
 # ast-search-python [1.2.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.1.2...ast-search-python@1.2.0) (2026-04-02)
 
 
