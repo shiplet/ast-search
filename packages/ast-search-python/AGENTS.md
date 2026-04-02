@@ -15,6 +15,7 @@ ast-search <query> --plugin ast-search-python [--dir <path>] [--format text|json
 | `--plugin` | `-p` | — | Must be `ast-search-python` to activate Python support |
 | `--dir` | `-d` | `cwd` | Root directory to search |
 | `--format` | `-f` | `text` | Output format: `text`, `json`, `files`, or `count` |
+| `--exclude` | `-x` | none | Glob pattern(s) to exclude from search (repeatable) |
 | `--lang` | `-l` | all | Pass `python` to restrict to Python files only |
 | `--context` | `-C` | `0` | Show N lines of context around each match (like `grep -C`) |
 | `--ast` | — | off | Print Python AST for a snippet or `--file`; requires `--lang python` |
@@ -83,13 +84,15 @@ Text output appends captures after the source line:
 src/app.py:5:0: logging.info("user logged in") | fn=logging.info msg="user logged in" call=logging.info("user logged in")
 ```
 
-JSON output includes a `captures` field when captures are present:
+JSON output includes `start`/`end` byte offsets and `source_full` (for multi-line matches) in addition to `captures`:
 
 ```json
 {
   "file": "src/app.py",
   "line": 5,
   "col": 0,
+  "start": 87,
+  "end": 116,
   "source": "logging.info(\"user logged in\")",
   "captures": {
     "fn": "logging.info",
@@ -98,6 +101,11 @@ JSON output includes a `captures` field when captures are present:
   }
 }
 ```
+
+- `start` / `end`: **byte offsets** from the start of the file (not UTF-16 character offsets as in the JS backend). For ASCII-only source these are equivalent; for non-ASCII source (e.g. Unicode identifiers or string literals), byte offsets and character offsets diverge — account for this when slicing file contents.
+- `source_full`: full text of the matched node. Only present when the match spans multiple lines (differs from `source`).
+
+⚠️ **Python `start`/`end` are byte offsets; JS/TS `start`/`end` are UTF-16 character offsets.** When writing tools that consume both, use the `file`/`line`/`col` fields for display and treat `start`/`end` as language-specific.
 
 All captures from a single pattern application are grouped onto one match — `@fn`, `@msg`, and `@call` from the same query match produce one result, not three.
 
@@ -204,6 +212,6 @@ const matches = await searchRepo('fn', './src');
 - **`async def` functions are typed as `function_definition`** in tree-sitter-python 0.21+. There is no separate `async_function_definition` node. The `fn` shorthand matches both. To match only async, use a predicate query.
 - **Shorthands are not expanded inside quoted strings.** `'(call function: (identifier) @n (#eq? @n "fn"))'` keeps `"fn"` literal.
 - **Unparseable files are silently skipped.** Syntax errors in source files do not abort the search.
-- **`node_modules` is always excluded**, as are files/directories whose names start with `.`.
+- **`node_modules` is always excluded**, as are files/directories whose names start with `.`. Use `--exclude` / `-x` for additional patterns (e.g. `--exclude '**/*_test.py'`). Patterns match against paths relative to `--dir`.
 - **Verify the AST structure before writing a query.** Python attribute chains like `self.client.send()` nest deeply — `self` is not the direct `object:` of the outer call; `self.client` is. If a predicate query returns no results, first remove the predicate and confirm the base pattern matches what you expect.
 - **All captures from one pattern match are grouped on a single result.** A query like `(function_definition name: (identifier) @n) @fn` produces one match per function, with both `@fn` and `@n` in the `captures` field. The anchor (location) is the first non-underscore capture — `@fn` in this case.

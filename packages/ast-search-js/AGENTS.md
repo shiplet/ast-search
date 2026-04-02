@@ -16,6 +16,7 @@ ast-search <query> [query2 ...] [--dir <path>] [--format text|json|files] [--lan
 |------|-------|---------|-------------|
 | `--dir` | `-d` | `cwd` | Root directory to search |
 | `--format` | `-f` | `text` | Output format: `text`, `json`, `files`, or `count` |
+| `--exclude` | `-x` | none | Glob pattern(s) to exclude from search (repeatable) |
 | `--lang` | `-l` | all | Restrict to one language backend by `langId` (e.g. `js`, `python`) |
 | `--plugin` | `-p` | none | Load a language plugin package (repeatable) |
 | `--context` | `-C` | `0` | Show N lines of context around each match (like `grep -C`) |
@@ -120,19 +121,38 @@ Pattern: `file:line:col: source` — `line` is 1-indexed, `col` is 0-indexed. `s
     "file": "src/components/Foo.vue",
     "line": 5,
     "col": 13,
+    "start": 142,
+    "end": 163,
     "source": "return this.testValue"
   },
   {
     "file": "src/app.ts",
     "line": 10,
     "col": 4,
+    "start": 312,
+    "end": 337,
     "source": "logger.info(\"hello world\")",
     "captures": { "callee.property.name": "info" }
+  },
+  {
+    "file": "src/app.ts",
+    "line": 20,
+    "col": 0,
+    "start": 501,
+    "end": 534,
+    "source": "createRoute(",
+    "source_full": "createRoute(\n  path,\n  handler\n)"
   }
 ]
 ```
 
-Single pretty-printed JSON array. The `captures` field is present only when the query used regex attribute matchers. The `query` field is present on every match when multiple queries were provided, identifying which selector produced it.
+Single pretty-printed JSON array. Fields:
+
+- `start` / `end`: character offsets from the start of the file (UTF-16 code units, matching JS `string.slice()`). Use these for programmatic edits — apply back-to-front (descending `start`) to avoid offset invalidation.
+- `source`: first trimmed line of the matched node. Always present.
+- `source_full`: complete text of the matched node including all lines. **Only present when the match spans multiple lines** (i.e. when it differs from `source`). For single-line matches, `source` is sufficient and `source_full` is omitted.
+- `captures`: present only when the query used regex attribute matchers (`/pattern/`).
+- `query`: present on every match when multiple queries were provided, identifying which selector produced it.
 
 ### `--format files`
 
@@ -272,10 +292,16 @@ const matches = await searchRepo(['FunctionDeclaration', 'ArrowFunctionExpressio
 //   file: string;
 //   line: number;
 //   col: number;
-//   source: string;
-//   query?: string;               // present when multiple selectors were provided
+//   start?: number;              // character offset of match start (UTF-16)
+//   end?: number;                // character offset of match end (UTF-16)
+//   source: string;              // first trimmed line of matched node
+//   source_full?: string;        // full matched node text; only present for multi-line matches
+//   query?: string;              // present when multiple selectors were provided
 //   captures?: Record<string, string>;  // present when selector uses /regex/ matchers
 // }>
+
+// With exclude patterns
+const matches = await searchRepo(['CallExpression'], dir, defaultRegistry, ['**/*.test.ts', 'dist/**']);
 ```
 
 To load plugins programmatically:
@@ -304,8 +330,8 @@ const matches = await searchRepo([selector], dir);
 
 - **Optional chaining is normalized transparently.** `foo?.bar()` and `foo?.bar` match `CallExpression` and `MemberExpression` selectors respectively — no need for separate queries. The `optional` flag is preserved, so `[optional=true]` still narrows to strictly optional-chain nodes.
 - **Unparseable files are silently skipped.** Syntax errors in source files do not abort the search; that file simply yields no matches.
-- **`node_modules` is always excluded.** So are any files/directories whose names start with `.`.
+- **`node_modules` is always excluded.** So are any files/directories whose names start with `.`. Use `--exclude` / `-x` for additional patterns (e.g. `--exclude '**/*.test.ts'` `--exclude 'dist/**'`). Patterns are matched against paths relative to `--dir`.
 - **`col` is 0-indexed.** `line` is 1-indexed. Match this when cross-referencing editor output.
-- **`source` is the first line only**, trimmed. Multi-line nodes (e.g., a full function body) are truncated. Use `--format json` and the `file`/`line`/`col` fields to locate the full node.
+- **`source` is the first line only**, trimmed. Use `--format json` to get `start`/`end` offsets and `source_full` (the full matched node text) for multi-line matches.
 - **JS shorthands expand globally** outside quoted strings and regex literals. Avoid bare shorthand keywords like `new` or `this` in unquoted attribute values — quote them: `[callee.name="this"]`. Regex literals (`/pattern/`) are preserved as-is.
 - **Early selector validation** only runs when a single backend is active (either only core is loaded, or `--lang` is specified). All provided queries are validated before any file I/O begins. In mixed-language mode, invalid selectors surface as no matches rather than an error at startup.

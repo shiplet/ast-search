@@ -100,10 +100,10 @@ export function resolvePath(node: unknown, path: string): string | undefined {
   return String(cur);
 }
 
-function extractFirstLine(source: string, node: Node): string {
-  if (!source || node.start == null) return "";
+function extractSource(source: string, node: Node): { first: string; full: string } {
+  if (!source || node.start == null) return { first: "", full: "" };
   const text = source.slice(node.start, node.end ?? node.start);
-  return text.split("\n")[0].trim();
+  return { first: text.split("\n")[0].trim(), full: text };
 }
 
 export function validateSelector(selector: string): void {
@@ -148,11 +148,16 @@ export function runQuery(
       const val = resolvePath(node, path);
       if (val !== undefined && regex.test(val)) captureMap[path] = val;
     }
+    const babelNode = node as unknown as Node;
+    const { first, full } = extractSource(source, babelNode);
     return {
       file: filename,
       line: (node as any).loc?.start.line ?? 0,
       col: (node as any).loc?.start.column ?? 0,
-      source: extractFirstLine(source, node as unknown as Node),
+      ...(babelNode.start != null ? { start: babelNode.start } : {}),
+      ...(babelNode.end != null ? { end: babelNode.end } : {}),
+      source: first,
+      ...(full !== first ? { source_full: full } : {}),
       ...(Object.keys(captureMap).length > 0 ? { captures: captureMap } : {}),
     };
   });

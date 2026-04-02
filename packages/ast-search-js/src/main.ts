@@ -20,6 +20,7 @@ export async function searchRepo(
   selectors: string[],
   dir: string,
   registry = defaultRegistry,
+  exclude: string[] = [],
 ): Promise<Match[]> {
   // Early validation when only one backend is registered (common JS-only case)
   if (registry.allBackends.length === 1) {
@@ -30,7 +31,7 @@ export async function searchRepo(
 
   const multiQuery = selectors.length > 1;
   const results: Match[] = [];
-  for await (const filePath of walkRepoFiles(dir, registry.allExtensions)) {
+  for await (const filePath of walkRepoFiles(dir, registry.allExtensions, exclude)) {
     try {
       const { ast, source, backend } = await parseFile(filePath, registry);
       for (const selector of selectors) {
@@ -174,13 +175,20 @@ const y = yargs(process.argv.slice(2))
           type: "string",
           describe: "line range to extract in --ast --file mode, e.g. 10-20 (1-indexed, inclusive)",
         })
+        .option("exclude", {
+          alias: "x",
+          type: "string",
+          array: true,
+          describe: 'glob patterns to exclude from search (e.g. "**/*.test.ts", "dist/**")',
+          default: [] as string[],
+        })
         .option("validate", {
           type: "boolean",
           description: "Check query syntax without running a search. Exits 0 if valid, 2 if invalid.",
           default: false,
         }),
     async (argv) => {
-      const { queries, dir, format, lang, plugin, agentHelp, ast, file, lines, context, validate } = argv as {
+      const { queries, dir, format, lang, plugin, agentHelp, ast, file, lines, context, validate, exclude } = argv as {
         queries?: string[];
         dir: string;
         format: OutputFormat;
@@ -192,6 +200,7 @@ const y = yargs(process.argv.slice(2))
         lines?: string;
         context: number;
         validate: boolean;
+        exclude: string[];
       };
       const query = queries?.[0];
 
@@ -383,7 +392,7 @@ const y = yargs(process.argv.slice(2))
           }
         }
 
-        let matches = await searchRepo(queries, dir, registry);
+        let matches = await searchRepo(queries, dir, registry, exclude);
         if (context > 0) matches = await enrichWithContext(matches, context);
         const isTTY = process.stdout.isTTY ?? false;
         for (const line of formatMatches(matches, isTTY, format)) {
