@@ -1,6 +1,6 @@
 {
   "name": "ast-search-mcp",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "MCP server for ast-search — structural code search for AI agents",
   "type": "module",
   "bin": {
@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "ast-search-js": "workspace:^",
+    "ast-search-js": "^1.8.0",
     "zod": "^3.25.0"
   },
   "devDependencies": {
