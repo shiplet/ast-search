@@ -1,3 +1,10 @@
+## ast-search-python [1.1.2](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.1.1...ast-search-python@1.1.2) (2026-04-02)
+
+
+### Bug Fixes
+
+* **docs:** add --ast and --context to README and AGENT files ([bec7853](https://github.com/willey-shiplet/ast-search/commit/bec7853a3c252a83fd3626d0dc54ae726e48dd0d))
+
 ## ast-search-python [1.1.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.1.0...ast-search-python@1.1.1) (2026-04-02)
 
 
