@@ -18,6 +18,7 @@ ast-search <query> --plugin ast-search-python [--dir <path>] [--format text|json
 | `--exclude` | `-x` | none | Glob pattern(s) to exclude from search (repeatable) |
 | `--lang` | `-l` | all | Pass `python` to restrict to Python files only |
 | `--context` | `-C` | `0` | Show N lines of context around each match (like `grep -C`) |
+| `--show-ast` | — | off | Print the tree-sitter AST subtree of each matched node below the match line |
 | `--ast` | — | off | Print Python AST for a snippet or `--file`; requires `--lang python` |
 
 **Exit codes:** `0` = matches found · `1` = no matches · `2` = error (invalid selector, etc.)

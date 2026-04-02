@@ -20,6 +20,7 @@ ast-search <query> [query2 ...] [--dir <path>] [--format text|json|files] [--lan
 | `--lang` | `-l` | all | Restrict to one language backend by `langId` (e.g. `js`, `python`) |
 | `--plugin` | `-p` | none | Load a language plugin package (repeatable) |
 | `--context` | `-C` | `0` | Show N lines of context around each match (like `grep -C`) |
+| `--show-ast` | — | off | Print the AST subtree of each matched node below the match line; useful when writing or debugging queries |
 | `--ast` | — | off | Print AST for a code snippet (positional arg) or `--file`; useful for writing queries |
 
 **Exit codes:** `0` = matches found · `1` = no matches · `2` = error (invalid selector, etc.)
@@ -55,6 +56,14 @@ Queries are [esquery](https://github.com/estools/esquery) CSS-style selectors ov
 | `binary` | `BinaryExpression` |
 | `logical` | `LogicalExpression` |
 | `spread` | `SpreadElement` |
+| `import` | `ImportDeclaration` |
+| `export` | `:matches(ExportNamedDeclaration, ExportDefaultDeclaration, ExportAllDeclaration)` |
+| `class` | `:matches(ClassDeclaration, ClassExpression)` |
+| `throw` | `ThrowStatement` |
+| `typeof` | `UnaryExpression[operator="typeof"]` |
+| `destructure` | `:matches(ObjectPattern, ArrayPattern)` |
+| `decorator` | `Decorator` |
+| `jsx` | `:matches(JSXElement, JSXFragment)` |
 
 Shorthands are **not** expanded inside quoted attribute values: `call[callee.name="new"]` keeps `"new"` literal.
 
@@ -112,6 +121,17 @@ src/app.ts:10:4: logger.info("hello world") | callee.property.name=info
 ```
 
 Pattern: `file:line:col: source` — `line` is 1-indexed, `col` is 0-indexed. `source` is the first line of the matched node, trimmed. Captures (if any) follow after ` | `.
+
+When `--show-ast` is used, the AST subtree of each matched node is printed below the match line, indented by two spaces:
+
+```
+src/app.ts:14:4: fetchUser(id)
+  CallExpression
+    callee: Identifier [name="fetchUser"]
+    arguments[0]: Identifier [name="id"]
+```
+
+This is the primary tool for debugging a query that matches too much or too little — run with `--show-ast` to see exactly what was matched, then refine the selector.
 
 ### `--format json`
 
@@ -335,3 +355,10 @@ const matches = await searchRepo([selector], dir);
 - **`source` is the first line only**, trimmed. Use `--format json` to get `start`/`end` offsets and `source_full` (the full matched node text) for multi-line matches.
 - **JS shorthands expand globally** outside quoted strings and regex literals. Avoid bare shorthand keywords like `new` or `this` in unquoted attribute values — quote them: `[callee.name="this"]`. Regex literals (`/pattern/`) are preserved as-is.
 - **Early selector validation** only runs when a single backend is active (either only core is loaded, or `--lang` is specified). All provided queries are validated before any file I/O begins. In mixed-language mode, invalid selectors surface as no matches rather than an error at startup.
+- **`--validate` prints a plain-English explanation** (JS backend only) of what a selector matches. Use this to verify query intent before running a full repo scan:
+  ```bash
+  ast-search --validate 'call[callee.property.name=/^(log|info)$/]'
+  # [js] Query syntax is valid.
+  #   Matches: `CallExpression` nodes where `callee.property.name` matches /^(log|info)$/
+  ```
+  In `--format json`, the explanation appears as an `"explanation"` field in the result object.

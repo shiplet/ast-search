@@ -1,6 +1,7 @@
 import { describe, it, expect } from "@jest/globals";
 import { getAst } from "../file.js";
-import { printAstText, printAstJson } from "../ast-print.js";
+import { printAstText, printAstJson, printMatchNode } from "../ast-print.js";
+import { runQuery } from "../search.js";
 
 // ---------------------------------------------------------------------------
 // printAstText
@@ -111,6 +112,47 @@ describe("printAstText — structure", () => {
   it("returns empty string for empty input", () => {
     const text = printAstText(getAst(""));
     expect(text).toBe("");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// printMatchNode
+// ---------------------------------------------------------------------------
+
+describe("printMatchNode — single node subtree", () => {
+  it("starts with the matched node's type", () => {
+    const source = "foo(bar)";
+    const ast = getAst(source);
+    const [match] = runQuery("CallExpression", ast, source);
+    // attach the raw node by re-querying
+    const text = printMatchNode((ast as any).program.body[0].expression);
+    expect(text).toMatch(/^CallExpression/);
+  });
+
+  it("does not include File or Program wrappers", () => {
+    const source = "foo(bar)";
+    const ast = getAst(source);
+    const node = (ast as any).program.body[0].expression;
+    const text = printMatchNode(node);
+    expect(text).not.toContain("File");
+    expect(text).not.toContain("Program");
+  });
+
+  it("shows child nodes indented", () => {
+    const source = "foo(bar)";
+    const ast = getAst(source);
+    const node = (ast as any).program.body[0].expression;
+    const text = printMatchNode(node);
+    expect(text).toContain("callee: Identifier");
+    expect(text).toContain("arguments[0]: Identifier");
+  });
+
+  it("returns a multi-line string for nodes with children", () => {
+    const source = "function f(x) { return x; }";
+    const ast = getAst(source);
+    const node = (ast as any).program.body[0];
+    const text = printMatchNode(node);
+    expect(text.split("\n").length).toBeGreaterThan(1);
   });
 });
 

@@ -314,3 +314,51 @@ describe("formatMatches — files format unaffected by context", () => {
     expect(lines).toEqual(["src/foo.ts"]);
   });
 });
+
+describe("formatMatches — astSubtree in text format (--show-ast)", () => {
+  const withSubtree: Match = {
+    file: "src/app.ts",
+    line: 3,
+    col: 0,
+    source: "foo(bar)",
+    astSubtree: "CallExpression\n  callee: Identifier [name=\"foo\"]\n  arguments[0]: Identifier [name=\"bar\"]",
+  };
+
+  it("prints astSubtree lines indented below the match line", () => {
+    const lines = formatMatches([withSubtree], false);
+    expect(lines[0]).toContain("src/app.ts:3:0: foo(bar)");
+    // formatMatchLines prepends two spaces to every astSubtree line;
+    // child lines already have two spaces from printMatchNode, so they get four total.
+    expect(lines[1]).toBe("  CallExpression");
+    expect(lines[2]).toBe('    callee: Identifier [name="foo"]');
+    expect(lines[3]).toBe('    arguments[0]: Identifier [name="bar"]');
+  });
+
+  it("the first astSubtree line (root node type) is prefixed with exactly two spaces", () => {
+    const lines = formatMatches([withSubtree], false);
+    expect(lines[1]).toMatch(/^  \S/); // exactly two leading spaces
+  });
+
+  it("match without astSubtree produces a single line", () => {
+    const lines = formatMatches([m], false);
+    expect(lines).toHaveLength(1);
+  });
+
+  it("json format includes astSubtree as a string field", () => {
+    const [json] = formatMatches([withSubtree], false, "json");
+    const parsed = JSON.parse(json);
+    expect(typeof parsed[0].astSubtree).toBe("string");
+    expect(parsed[0].astSubtree).toContain("CallExpression");
+  });
+
+  it("json format omits astSubtree when absent", () => {
+    const [json] = formatMatches([m], false, "json");
+    const parsed = JSON.parse(json);
+    expect(parsed[0].astSubtree).toBeUndefined();
+  });
+
+  it("files format is not affected by astSubtree", () => {
+    const lines = formatMatches([withSubtree], false, "files");
+    expect(lines).toEqual(["src/app.ts"]);
+  });
+});

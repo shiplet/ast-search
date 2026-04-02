@@ -17,8 +17,11 @@ export interface LanguageBackend {
    * Run a selector query against a parsed AST. The selector is in the
    * backend's native query syntax (after shorthand expansion). Returns matches
    * with file/line/col/source fields.
+   *
+   * `options.showAst` — when true, populate `astSubtree` on each match with
+   * an indented text representation of the matched node's AST subtree.
    */
-  query(ast: unknown, selector: string, source: string, filePath: string): Promise<Match[]> | Match[];
+  query(ast: unknown, selector: string, source: string, filePath: string, options?: { showAst?: boolean }): Promise<Match[]> | Match[];
 
   /**
    * Validate a selector string. Expands shorthands internally, then checks

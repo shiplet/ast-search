@@ -10,6 +10,8 @@ export interface Match {
   source: string;
   /** Full source text of the matched node; omitted when identical to source (single-line match) */
   source_full?: string;
+  /** AST subtree of the matched node as an indented text tree; only present when --show-ast is used */
+  astSubtree?: string;
   query?: string;
   captures?: Record<string, string>;
   contextBefore?: string[];
