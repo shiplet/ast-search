@@ -1,3 +1,10 @@
+# ast-search-python [1.2.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.1.2...ast-search-python@1.2.0) (2026-04-02)
+
+
+### Features
+
+* **--count:** add --count flag for exploratory queries ([#10](https://github.com/willey-shiplet/ast-search/issues/10)) ([073559a](https://github.com/willey-shiplet/ast-search/commit/073559a8182e63f3a7becfea4774ee299b657d1f))
+
 ## ast-search-python [1.1.2](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.1.1...ast-search-python@1.1.2) (2026-04-02)
 
 
