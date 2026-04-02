@@ -1,5 +1,8 @@
 # ast-search
 
+[![npm version: ast-search-js](https://img.shields.io/npm/v/ast-search-js)](https://www.npmjs.com/package/ast-search-js)
+[![npm version: ast-search-python](https://img.shields.io/npm/v/ast-search-python)](https://www.npmjs.com/package/ast-search-python)
+
 A CLI tool for searching source files using AST patterns, designed to facilitate large-scale refactors. Give it a query and a directory; it walks every supported file, runs the query against the parsed AST, and prints each match with its file path, line, and column.
 
 ```bash
