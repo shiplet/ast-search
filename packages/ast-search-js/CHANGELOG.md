@@ -1,3 +1,10 @@
+## ast-search-js [1.2.3](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.2.2...ast-search-js@1.2.3) (2026-04-02)
+
+
+### Bug Fixes
+
+* **docs:** add --ast and --context to README and AGENT files ([bec7853](https://github.com/willey-shiplet/ast-search/commit/bec7853a3c252a83fd3626d0dc54ae726e48dd0d))
+
 ## ast-search-js [1.2.2](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.2.1...ast-search-js@1.2.2) (2026-04-02)
 
 
