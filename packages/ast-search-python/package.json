@@ -1,6 +1,6 @@
 {
   "name": "ast-search-python",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Python language plugin for ast-search",
   "type": "module",
   "main": "./build/index.js",

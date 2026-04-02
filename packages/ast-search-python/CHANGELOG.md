@@ -1,3 +1,10 @@
+# ast-search-python [1.4.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.3.0...ast-search-python@1.4.0) (2026-04-02)
+
+
+### Features
+
+* **--show-ast, expanded shorthands, explain:** release additional cli tools ([f7319a1](https://github.com/willey-shiplet/ast-search/commit/f7319a155412f07b79a4141afe481018185ca839))
+
 # ast-search-python [1.3.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.2.0...ast-search-python@1.3.0) (2026-04-02)
 
 
