@@ -1,3 +1,16 @@
+# ast-search-js [1.2.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.1.0...ast-search-js@1.2.0) (2026-04-02)
+
+
+### Bug Fixes
+
+* **release:** fix release ([#9](https://github.com/willey-shiplet/ast-search/issues/9)) ([9ed938a](https://github.com/willey-shiplet/ast-search/commit/9ed938ad912e1c9d69867cf2e34bca960c73b709))
+
+
+### Features
+
+* **--context N:** add support for context --N flag ([#8](https://github.com/willey-shiplet/ast-search/issues/8)) ([3a255fc](https://github.com/willey-shiplet/ast-search/commit/3a255fc9567f5b1b6c625c46fcb5fae94c5f6012))
+* **ast-flag:** add support for --ast flag ([#7](https://github.com/willey-shiplet/ast-search/issues/7)) ([caa855b](https://github.com/willey-shiplet/ast-search/commit/caa855be52a59a7802451836630285f31e75672f))
+
 # ast-search-js [1.1.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.0.3...ast-search-js@1.1.0) (2026-04-02)
 
 
