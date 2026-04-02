@@ -1,3 +1,10 @@
+# ast-search-js [1.6.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.5.0...ast-search-js@1.6.0) (2026-04-02)
+
+
+### Features
+
+* **--show-ast, expanded shorthands, explain:** release additional cli tools ([f7319a1](https://github.com/willey-shiplet/ast-search/commit/f7319a155412f07b79a4141afe481018185ca839))
+
 # ast-search-js [1.5.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.4.0...ast-search-js@1.5.0) (2026-04-02)
 
 
