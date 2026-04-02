@@ -91,7 +91,10 @@ export function runTreeSitterQuery(
       file: filePath,
       line: anchor.node.startPosition.row + 1, // 1-indexed to match JS backend
       col: anchor.node.startPosition.column,
+      start: anchor.node.startIndex,
+      end: anchor.node.endIndex,
       source: firstLine,
+      ...(text !== firstLine ? { source_full: text } : {}),
       ...(Object.keys(captureMap).length > 0 ? { captures: captureMap } : {}),
     });
   }
