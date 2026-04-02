@@ -1,5 +1,7 @@
 # ast-search-python
 
+[![npm](https://img.shields.io/npm/v/ast-search-python?label=ast-search-python)](https://www.npmjs.com/package/ast-search-python)
+
 Python language plugin for [ast-search-js](../ast-search-js/README.md). Adds `.py` / `.pyw` file support using [tree-sitter](https://tree-sitter.github.io/tree-sitter/) S-expression queries.
 
 ## Table of Contents

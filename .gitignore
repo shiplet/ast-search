@@ -10,3 +10,4 @@ PROMPT.md
 ralph.yml
 *.swp
 .idea
+.claude/worktrees/
