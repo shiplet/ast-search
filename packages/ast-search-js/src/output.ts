@@ -6,17 +6,31 @@ const RESET = "\x1b[0m";
 
 export type OutputFormat = "text" | "json" | "files" | "count";
 
+export interface SearchMeta {
+  matchCount: number;
+  filesSearched: number;
+  wallMs: number;
+  queries: string[];
+  truncated: boolean;
+}
+
 export function formatMatches(
   matches: Match[],
   isTTY: boolean,
   format: OutputFormat = "text",
+  meta?: SearchMeta,
 ): string[] {
   if (format === "json") {
+    if (meta) {
+      return [JSON.stringify({ matches, _meta: meta }, null, 2)];
+    }
     return [JSON.stringify(matches, null, 2)];
   }
   if (format === "files") {
     const seen = new Set<string>();
-    return matches.map((m) => m.file).filter((f) => !seen.has(f) && !!seen.add(f));
+    const lines = matches.map((m) => m.file).filter((f) => !seen.has(f) && !!seen.add(f));
+    if (meta?.truncated) lines.push(`(truncated: showing first ${meta.matchCount} of more matches)`);
+    return lines;
   }
   if (format === "count") {
     if (matches.length === 0) return [];
@@ -28,7 +42,8 @@ export function formatMatches(
     const totalFiles = counts.size;
     const mWord = totalMatches === 1 ? "match" : "matches";
     const fWord = totalFiles === 1 ? "file" : "files";
-    lines.push("", `${totalMatches} ${mWord} across ${totalFiles} ${fWord}`);
+    const summary = `${totalMatches} ${mWord} across ${totalFiles} ${fWord}`;
+    lines.push("", meta?.truncated ? `${summary} (truncated)` : summary);
     return lines;
   }
 
@@ -40,6 +55,7 @@ export function formatMatches(
       out.push(line);
     }
   }
+  if (meta?.truncated) out.push(`(truncated: showing first ${meta.matchCount} of more matches)`);
   return out;
 }
 
