@@ -88,6 +88,9 @@ importers:
       '@jest/globals':
         specifier: ^29.7.0
         version: 29.7.0
+      '@semantic-release/exec':
+        specifier: ^6.0.3
+        version: 6.0.3(semantic-release@25.0.3(typescript@5.9.3))
       '@types/jest':
         specifier: ^29.5.12
         version: 29.5.14

@@ -38,6 +38,7 @@
     "tree-sitter-wasms": "^0.1.12"
   },
   "devDependencies": {
+    "@semantic-release/exec": "^6.0.3",
     "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.7",
