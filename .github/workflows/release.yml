@@ -60,5 +60,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: npx multi-semantic-release
+        run: npx multi-semantic-release --deps.bump=satisfy
 
