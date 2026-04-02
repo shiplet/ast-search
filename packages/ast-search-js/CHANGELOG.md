@@ -1,3 +1,10 @@
+# ast-search-js [1.8.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.7.0...ast-search-js@1.8.0) (2026-04-02)
+
+
+### Features
+
+* **MCP:** add ast-search-mcp ([#16](https://github.com/willey-shiplet/ast-search/issues/16)) ([d5437e2](https://github.com/willey-shiplet/ast-search/commit/d5437e27c8deb8d290e2792fd5750fb1f16c5cf4))
+
 # ast-search-js [1.7.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.6.0...ast-search-js@1.7.0) (2026-04-02)
 
 
