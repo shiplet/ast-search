@@ -18,19 +18,45 @@ export function formatMatches(
     const seen = new Set<string>();
     return matches.map((m) => m.file).filter((f) => !seen.has(f) && !!seen.add(f));
   }
-  return matches.map((m) => formatMatch(m, isTTY));
+
+  const hasContext = matches.some((m) => m.contextBefore !== undefined || m.contextAfter !== undefined);
+  const out: string[] = [];
+  for (let i = 0; i < matches.length; i++) {
+    if (hasContext && i > 0) out.push("--");
+    for (const line of formatMatchLines(matches[i], isTTY)) {
+      out.push(line);
+    }
+  }
+  return out;
 }
 
-function formatMatch(match: Match, isTTY: boolean): string {
-  const loc = `${match.file}:${match.line}:${match.col}`;
-  if (!match.source) return loc;
-  const src = isTTY ? `${BOLD}${CYAN}${match.source}${RESET}` : match.source;
-  let line = `${loc}: ${src}`;
-  if (match.captures && Object.keys(match.captures).length > 0) {
-    const capStr = Object.entries(match.captures)
-      .map(([k, v]) => `${k}=${/\s/.test(v) ? `"${v}"` : v}`)
-      .join(' ');
-    line += ` | ${capStr}`;
+function formatMatchLines(match: Match, isTTY: boolean): string[] {
+  const lines: string[] = [];
+
+  for (const [idx, content] of (match.contextBefore ?? []).entries()) {
+    const lineNum = match.line - (match.contextBefore!.length - idx);
+    lines.push(`${match.file}:${lineNum}- ${content}`);
   }
-  return line;
+
+  const loc = `${match.file}:${match.line}:${match.col}`;
+  if (!match.source) {
+    lines.push(loc);
+  } else {
+    const src = isTTY ? `${BOLD}${CYAN}${match.source}${RESET}` : match.source;
+    let matchLine = `${loc}: ${src}`;
+    if (match.captures && Object.keys(match.captures).length > 0) {
+      const capStr = Object.entries(match.captures)
+        .map(([k, v]) => `${k}=${/\s/.test(v) ? `"${v}"` : v}`)
+        .join(" ");
+      matchLine += ` | ${capStr}`;
+    }
+    lines.push(matchLine);
+  }
+
+  for (const [idx, content] of (match.contextAfter ?? []).entries()) {
+    const lineNum = match.line + 1 + idx;
+    lines.push(`${match.file}:${lineNum}- ${content}`);
+  }
+
+  return lines;
 }
