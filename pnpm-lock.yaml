@@ -85,8 +85,8 @@ importers:
         specifier: ^1.0.0
         version: 1.29.0(zod@3.25.76)
       ast-search-js:
-        specifier: workspace:^
-        version: link:../ast-search-js
+        specifier: ^1.8.0
+        version: 1.8.0
       zod:
         specifier: ^3.25.0
         version: 3.25.76
@@ -976,6 +976,10 @@ packages:
 
   ast-search-js@1.0.3:
     resolution: {integrity: sha512-zIGdQTm1GowPu63Fx5oca9bORV9Zy22bKj4XgWmfqTqJOmPsms3aNvvtQSU6gBPOy9Eramvq3ayeeaCyTF792A==}
+    hasBin: true
+
+  ast-search-js@1.8.0:
+    resolution: {integrity: sha512-ptigvxXgtWu6DK3hg2I3Iiz7c83lcpmxsWuaYqSGBdwCMJnHXLodzM1gE2AFJ89BYNFsfdw4/Jv9+EhKbkQ9CQ==}
     hasBin: true
 
   babel-jest@29.7.0:
@@ -4295,6 +4299,14 @@ snapshots:
       '@babel/parser': 7.29.2
       '@babel/types': 7.29.0
       esquery: 1.7.0
+      yargs: 17.7.2
+
+  ast-search-js@1.8.0:
+    dependencies:
+      '@babel/parser': 7.29.2
+      '@babel/types': 7.29.0
+      esquery: 1.7.0
+      micromatch: 4.0.8
       yargs: 17.7.2
 
   babel-jest@29.7.0(@babel/core@7.29.0):

@@ -21,8 +21,6 @@ npm install -g ast-search-js
 npm install -g ast-search-python
 ```
 
-> **pnpm users:** `tree-sitter` requires compiling a native addon. pnpm blocks build scripts by default, so the binary won't be built without extra steps. Either run `pnpm approve-builds -g` (select `tree-sitter` and `tree-sitter-python`), then reinstall — or use `npm install -g` instead.
-
 ## Usage
 
 Pass `--plugin ast-search-python` to enable Python file support:
