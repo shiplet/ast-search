@@ -1,3 +1,10 @@
+## ast-search-python [1.4.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.4.0...ast-search-python@1.4.1) (2026-04-03)
+
+
+### Bug Fixes
+
+* **JSON results:** add offsetEncoding to result type ([990e4ae](https://github.com/willey-shiplet/ast-search/commit/990e4aed5683f45cf0ddbd8bc3648c0d57dd4fa4))
+
 # ast-search-python [1.4.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.3.0...ast-search-python@1.4.0) (2026-04-02)
 
 
