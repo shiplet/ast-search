@@ -151,6 +151,88 @@ describe("handleSearch", () => {
     const result = await handleSearch({ queries: ["call"], limit: 1 });
     expect(parseResult(result)._meta.truncated).toBe(true);
   });
+
+  it('outputMode: "files" returns unique file paths without match details', async () => {
+    mockSearchRepoWithMeta.mockResolvedValue({
+      matches: [
+        { file: "src/a.ts", line: 1, col: 0, source: "foo()" },
+        { file: "src/b.ts", line: 2, col: 0, source: "bar()" },
+        { file: "src/a.ts", line: 5, col: 0, source: "foo()" },
+      ],
+      filesSearched: 10,
+      truncated: false,
+    });
+    const result = await handleSearch({ queries: ["call"], outputMode: "files" });
+    const parsed = parseResult(result);
+    expect(parsed.files).toEqual(["src/a.ts", "src/b.ts"]);
+    expect(parsed.matches).toBeUndefined();
+  });
+
+  it('outputMode: "count" returns per-file counts sorted descending', async () => {
+    mockSearchRepoWithMeta.mockResolvedValue({
+      matches: [
+        { file: "src/a.ts", line: 1, col: 0, source: "x" },
+        { file: "src/b.ts", line: 2, col: 0, source: "x" },
+        { file: "src/a.ts", line: 3, col: 0, source: "x" },
+        { file: "src/a.ts", line: 4, col: 0, source: "x" },
+      ],
+      filesSearched: 10,
+      truncated: false,
+    });
+    const result = await handleSearch({ queries: ["call"], outputMode: "count" });
+    const parsed = parseResult(result);
+    expect(parsed.files[0]).toEqual({ file: "src/a.ts", count: 3 });
+    expect(parsed.files[1]).toEqual({ file: "src/b.ts", count: 1 });
+    expect(parsed.matches).toBeUndefined();
+  });
+
+  it("compact: true strips source_full, astSubtree, contextBefore, contextAfter", async () => {
+    mockSearchRepoWithMeta.mockResolvedValue({
+      matches: [{
+        file: "src/a.ts", line: 1, col: 0, source: "x",
+        source_full: "x\ny\nz",
+        astSubtree: "Identifier\n  name: x",
+        contextBefore: ["prev"],
+        contextAfter: ["next"],
+      }],
+      filesSearched: 1,
+      truncated: false,
+    });
+    const result = await handleSearch({ queries: ["call"], compact: true });
+    const m = parseResult(result).matches[0];
+    expect(m.source).toBe("x");
+    expect(m.source_full).toBeUndefined();
+    expect(m.astSubtree).toBeUndefined();
+    expect(m.contextBefore).toBeUndefined();
+    expect(m.contextAfter).toBeUndefined();
+  });
+
+  it('profile: "production" merges preset excludes with user excludes', async () => {
+    await handleSearch({ queries: ["call"], profile: "production", exclude: ["dist/**"] });
+    const excludeArg = (mockSearchRepoWithMeta.mock.calls.at(-1) as unknown[])[3] as string[];
+    expect(excludeArg).toContain("dist/**");
+    expect(excludeArg).toContain("**/*.test.*");
+    expect(excludeArg).toContain("**/*.stories.*");
+    expect(excludeArg).toContain("**/mocks/**");
+  });
+
+  it('profile: "all" (default) adds no preset excludes', async () => {
+    await handleSearch({ queries: ["call"], profile: "all" });
+    const excludeArg = (mockSearchRepoWithMeta.mock.calls.at(-1) as unknown[])[3] as string[];
+    expect(excludeArg).not.toContain("**/*.test.*");
+  });
+
+  it("AST_SEARCH_EXCLUDE env var is merged into excludes", async () => {
+    process.env.AST_SEARCH_EXCLUDE = "**/generated/**,**/vendor/**";
+    try {
+      await handleSearch({ queries: ["call"] });
+      const excludeArg = (mockSearchRepoWithMeta.mock.calls.at(-1) as unknown[])[3] as string[];
+      expect(excludeArg).toContain("**/generated/**");
+      expect(excludeArg).toContain("**/vendor/**");
+    } finally {
+      delete process.env.AST_SEARCH_EXCLUDE;
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -200,6 +282,15 @@ describe("handleValidateQuery", () => {
     const parsed = parseResult(result);
     expect(parsed.valid).toBe(true);
     expect(parsed.explanation).toBeUndefined();
+  });
+
+  it("returns show_ast hint for a valid Python query", async () => {
+    const pythonBackend = { ...mockJsBackend, langId: "python", name: "Python" };
+    mockGetByLangId.mockReturnValue(pythonBackend);
+    const result = await handleValidateQuery({ query: "(function_definition) @fn", lang: "python" });
+    const parsed = parseResult(result);
+    expect(parsed.valid).toBe(true);
+    expect(parsed.hint).toContain("show_ast");
   });
 });
 

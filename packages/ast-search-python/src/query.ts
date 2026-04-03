@@ -106,6 +106,37 @@ export function runTreeSitterQuery(
   return results;
 }
 
+// Common tree-sitter error patterns and more actionable hints.
+function enrichTreeSitterError(raw: string, pattern: string): string {
+  const lines: string[] = [`Invalid tree-sitter query: ${raw}`];
+
+  // Detect "Invalid node type" — the most common authoring mistake
+  const nodeTypeMatch = raw.match(/Invalid node type[:\s]+["']?(\w+)["']?/i);
+  if (nodeTypeMatch) {
+    lines.push(
+      `Hint: node type "${nodeTypeMatch[1]}" is not recognized by the Python grammar.`,
+      `Use show_ast on a real .py file to discover the correct node names.`,
+    );
+    return lines.join("\n");
+  }
+
+  // Missing @ capture
+  if (!pattern.includes("@") && !raw.toLowerCase().includes("capture")) {
+    lines.push(
+      `Hint: tree-sitter S-expressions require a capture name, e.g. "(function_definition) @fn".`,
+      `Without @capture, no results are returned. The query engine may also reject bare S-expressions.`,
+    );
+    return lines.join("\n");
+  }
+
+  // Generic fallback guidance
+  lines.push(
+    `Hint: use show_ast on a .py file to see the correct node types and property names before authoring a query.`,
+    `Example valid queries: "(function_definition) @fn"  |  "(call) @_"  |  "(import_statement) @import"`,
+  );
+  return lines.join("\n");
+}
+
 export function validateTreeSitterQuery(
   pattern: string,
   language: unknown,
@@ -114,8 +145,7 @@ export function validateTreeSitterQuery(
     assertValidPattern(pattern);
     (language as TSLanguage).query(pattern);
   } catch (e) {
-    throw new Error(
-      `Invalid tree-sitter query: ${e instanceof Error ? e.message : String(e)}`,
-    );
+    const raw = e instanceof Error ? e.message : String(e);
+    throw new Error(enrichTreeSitterError(raw, pattern));
   }
 }

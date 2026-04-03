@@ -8,7 +8,7 @@ import {
   reactListNoKey,
   vueSFCOnlyJS,
 } from "./setup";
-import { runQuery, expandShorthands, extractRegexCaptures, resolvePath, normalizeOptionalChaining, explainSelector, Match } from "../search";
+import { runQuery, expandShorthands, extractRegexCaptures, resolvePath, normalizeOptionalChaining, explainSelector, validateSelector, Match } from "../search";
 import { getAst, getAstFromPath } from "../file";
 import { FileHandle } from "node:fs/promises";
 import { File } from "@babel/types";
@@ -363,6 +363,45 @@ describe("runQuery — start, end, and source_full fields", () => {
     expect(matches).toHaveLength(1);
     const { start, end, source_full } = matches[0];
     expect(source.slice(start, end)).toBe(source_full);
+  });
+});
+
+describe("runQuery — regex in :not() attribute selectors", () => {
+  test("ImportDeclaration with regex :not() excludes matching imports", () => {
+    const source = [
+      "import { Foo } from './foo.tsx';",
+      "import { Bar } from './graphql-operations.tsx';",
+      "import { Baz } from './baz.ts';",
+    ].join("\n");
+    const ast = getAst(source);
+    const matches = runQuery(
+      "ImportDeclaration[source.value=/\\.tsx$/]:not([source.value=/graphql-operations/])",
+      ast,
+      source,
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0].source).toContain("foo.tsx");
+  });
+
+  test("validateSelector accepts :not() with regex attribute matcher", () => {
+    expect(() =>
+      validateSelector("ImportDeclaration[source.value=/\\.tsx$/]:not([source.value=/graphql/])"),
+    ).not.toThrow();
+  });
+
+  test(":not() with regex and flags works", () => {
+    const source = [
+      "import { A } from './alpha.tsx';",
+      "import { B } from './BETAFile.tsx';",
+    ].join("\n");
+    const ast = getAst(source);
+    const matches = runQuery(
+      "ImportDeclaration:not([source.value=/beta/i])",
+      ast,
+      source,
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0].source).toContain("alpha");
   });
 });
 

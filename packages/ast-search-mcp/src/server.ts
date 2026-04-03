@@ -65,6 +65,9 @@ export const searchSchema = z.object({
   exclude: z.array(z.string()).optional().describe(
     'Glob patterns to exclude, e.g. ["**/*.test.ts", "dist/**"]',
   ),
+  profile: z.enum(["all", "production"]).optional().describe(
+    'Exclude preset: "production" skips test/spec/stories/mock/fixture files. "all" (default) applies no extra exclusions.',
+  ),
   limit: z.number().int().positive().optional().describe(
     "Stop after N matches. Use for exploratory scope checks on large repos.",
   ),
@@ -73,6 +76,12 @@ export const searchSchema = z.object({
   ),
   showAst: z.boolean().optional().describe(
     "Include the AST subtree of each matched node. Useful when writing or debugging queries.",
+  ),
+  outputMode: z.enum(["matches", "files", "count"]).optional().describe(
+    '"matches" (default) returns full match objects. "files" returns unique file paths only. "count" returns per-file match counts sorted descending.',
+  ),
+  compact: z.boolean().optional().describe(
+    "Omit source_full, astSubtree, contextBefore, and contextAfter from match objects to reduce response size.",
   ),
   plugins: z.array(z.string()).optional().describe(
     'Language plugin packages to load, e.g. ["ast-search-python"]. Loaded once per session.',
@@ -107,8 +116,20 @@ export const showAstSchema = z.object({
 // Handler: search
 // ---------------------------------------------------------------------------
 
+// Glob patterns excluded when profile: "production"
+const PRODUCTION_EXCLUDE = [
+  "**/*.test.*",
+  "**/*.spec.*",
+  "**/*.stories.*",
+  "**/*.d.ts",
+  "**/mocks/**",
+  "**/fixtures/**",
+  "**/__tests__/**",
+  "**/__mocks__/**",
+];
+
 export async function handleSearch(args: z.infer<typeof searchSchema>): Promise<ToolResult> {
-  const { queries, dir, lang, exclude, limit, context, showAst, plugins } = args;
+  const { queries, dir, lang, exclude, profile, limit, context, showAst, outputMode, compact, plugins } = args;
   try {
     await loadPlugins(plugins ?? []);
 
@@ -123,24 +144,50 @@ export async function handleSearch(args: z.infer<typeof searchSchema>): Promise<
       registry.register(backend);
     }
 
+    // Merge user-supplied excludes with profile presets and env-level defaults
+    const profileExcludes = profile === "production" ? PRODUCTION_EXCLUDE : [];
+    const envExcludes = process.env.AST_SEARCH_EXCLUDE
+      ? process.env.AST_SEARCH_EXCLUDE.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+    const effectiveExclude = [...(exclude ?? []), ...profileExcludes, ...envExcludes];
+
     const startMs = Date.now();
     const { matches: rawMatches, filesSearched, truncated } = await searchRepoWithMeta(
       queries,
       dir ?? process.cwd(),
       registry,
-      exclude ?? [],
+      effectiveExclude,
       { showAst, limit },
     );
     const wallMs = Date.now() - startMs;
 
-    const matches = (context ?? 0) > 0
+    const enriched = (context ?? 0) > 0
       ? await enrichWithContext(rawMatches, context!)
       : rawMatches;
 
-    const output = {
-      matches,
-      _meta: { matchCount: matches.length, filesSearched, wallMs, queries, truncated },
-    };
+    const meta = { matchCount: enriched.length, filesSearched, wallMs, queries, truncated };
+
+    // Apply outputMode shaping
+    const mode = outputMode ?? "matches";
+    let output: unknown;
+
+    if (mode === "files") {
+      const files = [...new Set(enriched.map((m) => m.file))];
+      output = { files, _meta: { ...meta, matchCount: files.length } };
+    } else if (mode === "count") {
+      const counts = new Map<string, number>();
+      for (const m of enriched) counts.set(m.file, (counts.get(m.file) ?? 0) + 1);
+      const sorted = [...counts.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([file, count]) => ({ file, count }));
+      output = { files: sorted, _meta: meta };
+    } else {
+      // Apply compact: strip verbose fields
+      const matches = compact
+        ? enriched.map(({ source_full: _sf, astSubtree: _ast, contextBefore: _cb, contextAfter: _ca, ...rest }) => rest)
+        : enriched;
+      output = { matches, _meta: meta };
+    }
 
     return { content: [{ type: "text" as const, text: JSON.stringify(output, null, 2) }] };
   } catch (err) {
@@ -171,9 +218,18 @@ export async function handleValidateQuery(
 
     await backend.validateSelector(query);
 
-    const explanation = backend.langId === "js" ? explainSelector(query) : undefined;
     const result: Record<string, unknown> = { valid: true, lang: backend.langId };
-    if (explanation) result.explanation = explanation;
+
+    if (backend.langId === "js") {
+      const explanation = explainSelector(query);
+      if (explanation) result.explanation = explanation;
+    } else if (backend.langId === "python") {
+      result.hint =
+        "Query syntax is valid. To verify it matches real code, use show_ast on a .py file " +
+        "(pass file + optional lines) to inspect node types, then re-run your query. " +
+        "If the query returns 0 results, the node type or field name may not match — " +
+        "check the AST output and adjust accordingly.";
+    }
 
     return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
   } catch (err) {
@@ -265,15 +321,20 @@ Returns precise match locations with file path, line, column, source snippet, an
 Prefer this over grep/ripgrep when the query is about code structure rather than text.
 
 Query examples:
-  ["FunctionDeclaration[async=true]"]          — async function declarations
-  ["call[callee.property.name='log']"]         — calls to any .log() method
-  ["await"]                                    — all await expressions
-  ["ImportDeclaration[source.value='react']"]  — files importing react
+  ["FunctionDeclaration[async=true]"]                                 — async function declarations
+  ["call[callee.property.name='log']"]                                — calls to any .log() method
+  ["ImportDeclaration[source.value=/\\.tsx$/]:not([source.value=/graphql/])"]  — .tsx imports excluding graphql
+  ["await"]                                                           — all await expressions
 
 Workflow tips:
+- Use outputMode: "files" or "count" for audits — avoids shipping source snippets you don't need.
+- Use profile: "production" to skip test/stories/mock files without specifying them manually each time.
+- Set AST_SEARCH_EXCLUDE env var for project-level default exclusions (comma-separated glob patterns).
+- Use compact: true to strip source_full/context fields when you only need match locations.
 - Use limit (e.g. 10) for scope checks before committing to a large refactor.
 - Pass multiple queries to search for several patterns in a single repo walk.
 - Use showAst: true when you need to refine a query — it prints the AST subtree of each match.
+- Regex in :not() works: [attr=/pattern/]:not([attr=/other/]) is valid syntax.
 - For Python files, pass plugins: ["ast-search-python"] and use tree-sitter S-expressions.`,
     inputSchema: searchSchema,
   },
@@ -285,7 +346,7 @@ server.registerTool(
   {
     title: "Validate an AST query",
     description:
-      "Validate an AST selector without running a search. Returns whether the syntax is valid and, for JS queries, a plain-English explanation of what nodes the query matches. Use this before running an unfamiliar query on a large repo.",
+      "Validate an AST selector without running a search. Returns whether the syntax is valid and, for JS queries, a plain-English explanation of what nodes the query matches. For Python queries, returns a hint pointing to the show_ast workflow for discovering correct node types. Use this before running an unfamiliar query on a large repo.",
     inputSchema: validateSchema,
   },
   handleValidateQuery,

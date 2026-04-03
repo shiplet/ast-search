@@ -63,6 +63,26 @@ describe("validateTreeSitterQuery", () => {
       validateTreeSitterQuery("(((unclosed", language),
     ).toThrow(/Invalid tree-sitter query/);
   });
+
+  test("error for unknown node type includes show_ast hint", () => {
+    let msg = "";
+    try {
+      validateTreeSitterQuery("(totally_nonexistent_node_type) @x", language);
+    } catch (e) {
+      msg = (e as Error).message;
+    }
+    expect(msg).toContain("show_ast");
+  });
+
+  test("error message includes the original tree-sitter error", () => {
+    let msg = "";
+    try {
+      validateTreeSitterQuery("(totally_nonexistent_node_type) @x", language);
+    } catch (e) {
+      msg = (e as Error).message;
+    }
+    expect(msg).toContain("Invalid tree-sitter query");
+  });
 });
 
 describe("runTreeSitterQuery", () => {
