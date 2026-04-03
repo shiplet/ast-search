@@ -1,7 +1,8 @@
-{
-  "branches": ["main", { "name": "beta", "channel": "beta", "prerelease": true }, { "name": "next-major", "channel": "next-major", "prerelease": true }],
-  "tagFormat": "ast-search-js@${version}",
-  "plugins": [
+const base = require('../../release.config.base.cjs');
+module.exports = {
+  ...base,
+  tagFormat: "ast-search-js@${version}",
+  plugins: [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     ["@semantic-release/changelog", { "changelogFile": "CHANGELOG.md" }],
@@ -10,4 +11,4 @@
     ["@semantic-release/git", { "assets": ["package.json", "CHANGELOG.md", "src/version.ts"], "message": "chore(release): ast-search-js ${nextRelease.version} [skip ci]" }],
     "@semantic-release/github"
   ]
-}
+};

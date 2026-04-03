@@ -85,8 +85,8 @@ importers:
         specifier: ^1.0.0
         version: 1.29.0(zod@3.25.76)
       ast-search-js:
-        specifier: 1.9.0-beta.1
-        version: 1.9.0-beta.1
+        specifier: 1.9.0-beta.2
+        version: link:../ast-search-js
       zod:
         specifier: ^3.25.0
         version: 3.25.76
@@ -116,8 +116,8 @@ importers:
   packages/ast-search-python:
     dependencies:
       ast-search-js:
-        specifier: 1.9.0-beta.1
-        version: 1.9.0-beta.1
+        specifier: '>=1.0.0 <2.0.0'
+        version: 1.9.0
       tree-sitter-wasms:
         specifier: ^0.1.12
         version: 0.1.13
@@ -974,8 +974,8 @@ packages:
     resolution: {integrity: sha512-3CYzex9M9FGQjCGMGyi6/31c8GJbgb0qGyrx5HWxPd0aCwh4cB2YjMb2Xf9UuoogrMrlO9cTqnB5rI5GHZTcUA==}
     engines: {node: '>=0.10.0'}
 
-  ast-search-js@1.9.0-beta.1:
-    resolution: {integrity: sha512-A323FTkk5aUVbxWyQfJxTLYkNBnoTIQ/uSC2cCltmnZqVA1TAbzwxs5RSVMnNU+PHDLzjyyt+wlAyOSOBUpo7Q==}
+  ast-search-js@1.9.0:
+    resolution: {integrity: sha512-JD0VvR5ANEdDqikfGRUbgTecYlJBAXgLQ7DopXE5w6stSXqDrr48hUs361GXocckL4tmUjHG9HrAdpTHtJv83Q==}
     hasBin: true
 
   babel-jest@29.7.0:
@@ -4290,7 +4290,7 @@ snapshots:
 
   arrify@1.0.1: {}
 
-  ast-search-js@1.9.0-beta.1:
+  ast-search-js@1.9.0:
     dependencies:
       '@babel/parser': 7.29.2
       '@babel/types': 7.29.0

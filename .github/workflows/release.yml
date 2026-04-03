@@ -5,7 +5,6 @@ on:
     branches:
       - main
       - beta
-      - next
       - next-major
   workflow_dispatch:
 
@@ -63,5 +62,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: npx multi-semantic-release --deps.bump=satisfy
+        run: npx multi-semantic-release --deps.bump=satisfy --sequential-prepare --first-parent
+
+      - name: Update lockfile after release
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          pnpm install --no-frozen-lockfile
+          git diff --quiet pnpm-lock.yaml || (git add pnpm-lock.yaml && git commit -m "chore: update pnpm-lock.yaml after release [skip ci]" && git push)
 
