@@ -6,8 +6,7 @@
     "onlyBuiltDependencies": [
       "tree-sitter",
       "tree-sitter-python"
-    ],
-    "linkWorkspacePackages": true
+    ]
   },
   "scripts": {
     "prepare": "git config core.hooksPath .githooks"
