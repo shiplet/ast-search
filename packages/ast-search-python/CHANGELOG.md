@@ -1,3 +1,15 @@
+# ast-search-python [1.5.0-beta.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.4.1...ast-search-python@1.5.0-beta.1) (2026-04-03)
+
+
+### Features
+
+* add outputMode to MCP; update tests; python validate_query feedback ([077e5bd](https://github.com/willey-shiplet/ast-search/commit/077e5bdca8346049f99b4af5e7c27dba71d01886))
+
+
+### Dependencies
+
+* **ast-search-js:** upgraded to 1.9.0-beta.1
+
 ## ast-search-python [1.4.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.4.0...ast-search-python@1.4.1) (2026-04-03)
 
 
