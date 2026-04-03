@@ -60,7 +60,7 @@
     "yargs": "^17.7.2"
   },
   "bin": {
-    "ast-search": "./build/cli.js"
+    "ast-search": "build/cli.js"
   },
   "files": [
     "build/cli.js",
