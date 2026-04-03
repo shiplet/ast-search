@@ -1,3 +1,20 @@
+# ast-search-mcp [1.1.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-mcp@1.0.0...ast-search-mcp@1.1.0) (2026-04-03)
+
+
+### Bug Fixes
+
+* release debug ([6624013](https://github.com/willey-shiplet/ast-search/commit/6624013aa8c488bcc1c89a73013edda92f63b384))
+
+
+### Features
+
+* add outputMode to MCP; update tests; python validate_query feed… ([#17](https://github.com/willey-shiplet/ast-search/issues/17)) ([1f1f58e](https://github.com/willey-shiplet/ast-search/commit/1f1f58eecea6c2d7f7b319c7625a48d4f23149e0)), closes [#18](https://github.com/willey-shiplet/ast-search/issues/18)
+
+
+### Dependencies
+
+* **ast-search-js:** upgraded to 1.9.0
+
 # ast-search-mcp [1.1.0-beta.2](https://github.com/willey-shiplet/ast-search/compare/ast-search-mcp@1.1.0-beta.1...ast-search-mcp@1.1.0-beta.2) (2026-04-03)
 
 
