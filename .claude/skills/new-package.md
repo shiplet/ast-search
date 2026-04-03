@@ -24,7 +24,7 @@ Add any missing fields.
 
 ### Step 2 — .releaserc.json
 
-Create `packages/<name>/.releaserc.json` if it doesn't exist, modeled after `packages/ast-search-js/.releaserc.json`:
+Create `packages/<name>/.releaserc.json` if it doesn't exist. Include the `pnpm install --no-frozen-lockfile` exec step and the lockfile in git assets — both are required to keep the lockfile in sync after multi-semantic-release rewrites `workspace:^` references to real version numbers:
 
 ```json
 {
@@ -35,22 +35,38 @@ Create `packages/<name>/.releaserc.json` if it doesn't exist, modeled after `pac
     "@semantic-release/release-notes-generator",
     ["@semantic-release/changelog", { "changelogFile": "CHANGELOG.md" }],
     ["@semantic-release/npm", { "npmPublish": true }],
-    ["@semantic-release/git", { "assets": ["package.json", "CHANGELOG.md"], "message": "chore(release): <name> ${nextRelease.version} [skip ci]" }],
+    ["@semantic-release/exec", { "prepareCmd": "pnpm install --no-frozen-lockfile" }],
+    ["@semantic-release/git", { "assets": ["package.json", "CHANGELOG.md", "../../pnpm-lock.yaml"], "message": "chore(release): <name> ${nextRelease.version} [skip ci]" }],
     "@semantic-release/github"
   ]
 }
 ```
 
-Do NOT include a `pnpm install --no-frozen-lockfile` exec step — this causes failures when workspace dependencies haven't been published yet.
+**Why the exec step is needed:** multi-semantic-release rewrites `workspace:^` dependencies to real version numbers (e.g. `^1.8.0`) in `package.json` before the git commit. The repo's pre-commit hook validates the lockfile with `pnpm install --frozen-lockfile`, so if the lockfile still says `workspace:^` the commit will fail. The exec step updates the lockfile to match, and the git plugin commits it.
+
+**Important:** The `pnpm install --no-frozen-lockfile` step runs *after* `@semantic-release/npm` publishes the package, so all workspace deps will be resolvable on npm by that point.
 
 ### Step 3 — release.yml build step
 
 Read `.github/workflows/release.yml` and add `pnpm --filter <name> run build` to the Build step's `run` command alongside the other packages.
 
-### Step 4 — npm Trusted Publishing (manual)
+### Step 4 — Check for ghost tags on workspace dependencies
+
+Before triggering a release, check whether any workspace dependencies have a git tag that was never published to npm. This happens when a previous release run tagged git but failed before the npm publish step.
+
+For each `workspace:^` dependency in the new package's `package.json`:
+1. Check the current git tag version: `git tag | grep <dep>@`
+2. Check what's on npm: `npm view <dep> version`
+3. If the git tag version is higher than npm, manually publish: `cd packages/<dep> && npm publish --no-provenance`
+
+If a ghost tag exists and isn't fixed, `pnpm install --no-frozen-lockfile` will fail with `ERR_PNPM_NO_MATCHING_VERSION` because multi-semantic-release resolves `workspace:^` to the tagged (but unpublished) version.
+
+### Step 5 — npm Trusted Publishing (manual)
 
 Tell the user to:
 1. Do a one-time local publish to create the package on npm: `cd packages/<name> && npm publish --access public --no-provenance`
+   - If you get `EUSAGE: Automatic provenance generation not supported for provider: null`, that's expected — use `--no-provenance` as shown
+   - If you get `E404 Not Found`, run `npm whoami` to confirm you're logged in
 2. Go to npmjs.com → the package → Settings → Trusted Publishers and add:
    - Owner: `willey-shiplet`
    - Repository: `ast-search`
@@ -59,13 +75,14 @@ Tell the user to:
 
 Wait for the user to confirm both are done before proceeding.
 
-### Step 5 — Trigger release
+### Step 6 — Trigger release
 
-Tell the user to merge their branch to `main` and watch the GitHub Actions Release workflow. Key things to watch for:
-- The new package should appear in the `package paths` list
-- It should find no previous git tag and retrieve all commits
-- Watch for any `ERR_PNPM_NO_MATCHING_VERSION` errors — if seen, check whether a ghost git tag exists for a dependency (e.g. `ast-search-js@X.Y.Z` tagged but not published to npm) and manually publish it: `cd packages/<dep> && npm publish --no-provenance`
+Tell the user to merge their branch to `main` and watch the GitHub Actions Release workflow. The new package should appear in the `package paths` list, find no previous git tag, and release as `1.0.0`. Other packages with no new commits will be skipped.
 
-### Step 6 — Confirm success
+If the release fails, check the logs for:
+- `ERR_PNPM_NO_MATCHING_VERSION` — ghost tag issue, see Step 4
+- `ERR_PNPM_OUTDATED_LOCKFILE` — lockfile sync issue; verify the exec step and lockfile asset are in `.releaserc.json`
+
+### Step 7 — Confirm success
 
 Wait for the user to report back that the release workflow succeeded. Once confirmed, the skill is complete. Congratulate the user and summarize what was set up.
