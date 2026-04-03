@@ -238,6 +238,7 @@ export function runQuery(
       col: (node as any).loc?.start.column ?? 0,
       ...(babelNode.start != null ? { start: babelNode.start } : {}),
       ...(babelNode.end != null ? { end: babelNode.end } : {}),
+      ...(babelNode.start != null ? { offsetEncoding: "utf16" as const } : {}),
       source: first,
       ...(full !== first ? { source_full: full } : {}),
       ...(showAst ? { astSubtree: printMatchNode(babelNode) } : {}),

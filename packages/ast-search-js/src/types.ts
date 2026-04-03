@@ -2,10 +2,12 @@ export interface Match {
   file: string;
   line: number;
   col: number;
-  /** Character offset of the match start within the file (UTF-16 for JS/TS; byte offset for Python) */
+  /** Character offset of the match start within the file */
   start?: number;
-  /** Character offset of the match end within the file (UTF-16 for JS/TS; byte offset for Python) */
+  /** Character offset of the match end within the file */
   end?: number;
+  /** Encoding of start/end offsets: "utf16" for JS/TS (Babel), "bytes" for Python (tree-sitter) */
+  offsetEncoding?: "utf16" | "bytes";
   /** First trimmed line of the matched node — always present, backwards-compatible */
   source: string;
   /** Full source text of the matched node; omitted when identical to source (single-line match) */

@@ -95,6 +95,7 @@ export function runTreeSitterQuery(
       col: anchor.node.startPosition.column,
       start: anchor.node.startIndex,
       end: anchor.node.endIndex,
+      offsetEncoding: "bytes" as const,
       source: firstLine,
       ...(text !== firstLine ? { source_full: text } : {}),
       ...(showAst ? { astSubtree: printMatchTSNode(anchor.node as any) } : {}),
