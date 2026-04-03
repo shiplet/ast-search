@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+      - beta
+      - next
+      - next-major
   workflow_dispatch:
 
 permissions:
@@ -60,5 +63,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: npx multi-semantic-release --deps.bump=satisfy
+        run: npx multi-semantic-release --deps.bump=satisfy --sequential-prepare
 
