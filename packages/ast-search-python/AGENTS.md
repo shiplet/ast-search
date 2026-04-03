@@ -94,6 +94,7 @@ JSON output includes `start`/`end` byte offsets and `source_full` (for multi-lin
   "col": 0,
   "start": 87,
   "end": 116,
+  "offsetEncoding": "bytes",
   "source": "logging.info(\"user logged in\")",
   "captures": {
     "fn": "logging.info",
@@ -103,10 +104,10 @@ JSON output includes `start`/`end` byte offsets and `source_full` (for multi-lin
 }
 ```
 
-- `start` / `end`: **byte offsets** from the start of the file (not UTF-16 character offsets as in the JS backend). For ASCII-only source these are equivalent; for non-ASCII source (e.g. Unicode identifiers or string literals), byte offsets and character offsets diverge — account for this when slicing file contents.
+- `start` / `end`: character offsets from the start of the file. `offsetEncoding` is always `"bytes"` for Python matches (tree-sitter). For ASCII-only source, byte offsets and UTF-16 offsets are equivalent; for non-ASCII source (e.g. Unicode identifiers or string literals) they diverge — account for this when slicing file contents.
 - `source_full`: full text of the matched node. Only present when the match spans multiple lines (differs from `source`).
 
-⚠️ **Python `start`/`end` are byte offsets; JS/TS `start`/`end` are UTF-16 character offsets.** When writing tools that consume both, use the `file`/`line`/`col` fields for display and treat `start`/`end` as language-specific.
+⚠️ **`offsetEncoding` differs by language: `"bytes"` for Python, `"utf16"` for JS/TS.** When writing tools that consume both, use `offsetEncoding` to determine how to interpret `start`/`end`, or use `file`/`line`/`col` for display and avoid `start`/`end` cross-language comparisons.
 
 All captures from a single pattern application are grouped onto one match — `@fn`, `@msg`, and `@call` from the same query match produce one result, not three.
 

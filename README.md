@@ -2,6 +2,7 @@
 
 [![npm version: ast-search-js](https://img.shields.io/npm/v/ast-search-js)](https://www.npmjs.com/package/ast-search-js)
 [![npm version: ast-search-python](https://img.shields.io/npm/v/ast-search-python)](https://www.npmjs.com/package/ast-search-python)
+[![npm version: ast-search-mcp](https://img.shields.io/npm/v/ast-search-mcp)](https://www.npmjs.com/package/ast-search-mcp)
 
 A CLI tool for searching source files using AST patterns, designed to facilitate large-scale refactors. Give it a query and a directory; it walks every supported file, runs the query against the parsed AST, and prints each match with its file path, line, and column.
 
@@ -19,6 +20,7 @@ ast-search 'raise' --plugin ast-search-python
 | ------- | ----------- |
 | [ast-search-js](packages/ast-search-js/README.md) | Core CLI. Supports JS, TS, JSX, TSX, Vue. Uses [esquery](https://github.com/estools/esquery) CSS selector syntax over Babel AST nodes. |
 | [ast-search-python](packages/ast-search-python/README.md) | Python plugin. Adds `.py`/`.pyw` support via [tree-sitter](https://tree-sitter.github.io/tree-sitter/) S-expression queries. |
+| [ast-search-mcp](packages/ast-search-mcp/README.md) | MCP server. Exposes `search`, `validate_query`, and `show_ast` as MCP tools for Claude Code, Claude Desktop, and other MCP clients. |
 
 ## Quick start
 

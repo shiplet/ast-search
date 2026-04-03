@@ -143,6 +143,7 @@ This is the primary tool for debugging a query that matches too much or too litt
     "col": 13,
     "start": 142,
     "end": 163,
+    "offsetEncoding": "utf16",
     "source": "return this.testValue"
   },
   {
@@ -151,6 +152,7 @@ This is the primary tool for debugging a query that matches too much or too litt
     "col": 4,
     "start": 312,
     "end": 337,
+    "offsetEncoding": "utf16",
     "source": "logger.info(\"hello world\")",
     "captures": { "callee.property.name": "info" }
   },
@@ -160,6 +162,7 @@ This is the primary tool for debugging a query that matches too much or too litt
     "col": 0,
     "start": 501,
     "end": 534,
+    "offsetEncoding": "utf16",
     "source": "createRoute(",
     "source_full": "createRoute(\n  path,\n  handler\n)"
   }
@@ -168,7 +171,7 @@ This is the primary tool for debugging a query that matches too much or too litt
 
 Single pretty-printed JSON array. Fields:
 
-- `start` / `end`: character offsets from the start of the file (UTF-16 code units, matching JS `string.slice()`). Use these for programmatic edits — apply back-to-front (descending `start`) to avoid offset invalidation.
+- `start` / `end`: character offsets from the start of the file. `offsetEncoding` is always `"utf16"` for JS/TS matches (Babel), matching JS `string.slice()`. Use these for programmatic edits — apply back-to-front (descending `start`) to avoid offset invalidation.
 - `source`: first trimmed line of the matched node. Always present.
 - `source_full`: complete text of the matched node including all lines. **Only present when the match spans multiple lines** (i.e. when it differs from `source`). For single-line matches, `source` is sufficient and `source_full` is omitted.
 - `captures`: present only when the query used regex attribute matchers (`/pattern/`).
@@ -312,8 +315,9 @@ const matches = await searchRepo(['FunctionDeclaration', 'ArrowFunctionExpressio
 //   file: string;
 //   line: number;
 //   col: number;
-//   start?: number;              // character offset of match start (UTF-16)
-//   end?: number;                // character offset of match end (UTF-16)
+//   start?: number;              // character offset of match start
+//   end?: number;                // character offset of match end
+//   offsetEncoding?: "utf16" | "bytes";  // "utf16" for JS/TS; "bytes" for Python
 //   source: string;              // first trimmed line of matched node
 //   source_full?: string;        // full matched node text; only present for multi-line matches
 //   query?: string;              // present when multiple selectors were provided
