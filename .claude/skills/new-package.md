@@ -44,11 +44,7 @@ Create `packages/<name>/.releaserc.json` if it doesn't exist. Include the `pnpm 
 
 **Why the exec step is needed:** multi-semantic-release rewrites `workspace:^` dependencies to real version numbers (e.g. `^1.8.0`) in `package.json` before the git commit. The repo's pre-commit hook validates the lockfile with `pnpm install --frozen-lockfile`, so if the lockfile still says `workspace:^` the commit will fail. The exec step updates the lockfile to match, and the git plugin commits it.
 
-**Important:** The `pnpm install` step runs during `prepare`, which is *before* `@semantic-release/npm` publishes the package. This means any bumped workspace dependency versions won't exist on npm yet when the install runs. The repo's `.npmrc` sets `link-workspace-packages=true` so pnpm resolves those packages from the local workspace instead of the registry, avoiding `ERR_PNPM_NO_MATCHING_VERSION`.
-
-**Note on `.npmrc` warnings:** npm also reads `.npmrc` and will emit `Unknown config "link-workspace-packages"` warnings during the publish steps. These are harmless — npm ignores the key, pnpm uses it correctly. Do not attempt to move this setting elsewhere:
-- `linkWorkspacePackages` in the `"pnpm"` section of `package.json` is not read by pnpm for this purpose
-- `--config.link-workspace-packages=true` as a CLI flag is accepted by pnpm but does not activate the behavior at resolve time
+**Important:** The `pnpm install --no-frozen-lockfile` step runs *after* `@semantic-release/npm` publishes the package, so all workspace deps will be resolvable on npm by that point.
 
 ### Step 3 — release.yml build step
 
