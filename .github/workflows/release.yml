@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - beta
+      - next
       - next-major
   workflow_dispatch:
 
