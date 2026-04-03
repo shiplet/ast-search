@@ -1,3 +1,23 @@
+# ast-search-js [1.10.0-beta.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.9.0...ast-search-js@1.10.0-beta.1) (2026-04-03)
+
+
+### Bug Fixes
+
+* clean up release logs ([#18](https://github.com/willey-shiplet/ast-search/issues/18)) ([84a4282](https://github.com/willey-shiplet/ast-search/commit/84a4282f649447b64befae535859c3291df89aea))
+
+
+### Features
+
+* add outputMode to MCP; update tests; python validate_query feedback ([077e5bd](https://github.com/willey-shiplet/ast-search/commit/077e5bdca8346049f99b4af5e7c27dba71d01886))
+* updated release definition & strategy ([75533c0](https://github.com/willey-shiplet/ast-search/commit/75533c01baf514bdabc060193ee34609026d1bea))
+
+# ast-search-js [1.9.0-beta.3](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.9.0-beta.2...ast-search-js@1.9.0-beta.3) (2026-04-03)
+
+
+### Features
+
+* updated release definition & strategy ([75533c0](https://github.com/willey-shiplet/ast-search/commit/75533c01baf514bdabc060193ee34609026d1bea))
+
 # ast-search-js [1.9.0](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.8.1...ast-search-js@1.9.0) (2026-04-03)
 
 

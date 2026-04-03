@@ -85,7 +85,7 @@ importers:
         specifier: ^1.0.0
         version: 1.29.0(zod@3.25.76)
       ast-search-js:
-        specifier: workspace:^
+        specifier: 1.10.0-beta.1
         version: link:../ast-search-js
       zod:
         specifier: ^3.25.0
@@ -116,7 +116,7 @@ importers:
   packages/ast-search-python:
     dependencies:
       ast-search-js:
-        specifier: 1.9.0-beta.2
+        specifier: 1.10.0-beta.1
         version: link:../ast-search-js
       tree-sitter-wasms:
         specifier: ^0.1.12
