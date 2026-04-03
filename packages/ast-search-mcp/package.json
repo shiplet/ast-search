@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "ast-search-js": "1.9.0-beta.2",
+    "ast-search-js": "workspace:^",
     "zod": "^3.25.0"
   },
   "devDependencies": {

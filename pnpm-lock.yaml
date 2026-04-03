@@ -85,7 +85,7 @@ importers:
         specifier: ^1.0.0
         version: 1.29.0(zod@3.25.76)
       ast-search-js:
-        specifier: 1.9.0-beta.2
+        specifier: workspace:^
         version: link:../ast-search-js
       zod:
         specifier: ^3.25.0
