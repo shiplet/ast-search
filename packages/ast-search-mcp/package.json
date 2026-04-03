@@ -4,7 +4,7 @@
   "description": "MCP server for ast-search — structural code search for AI agents",
   "type": "module",
   "bin": {
-    "ast-search-mcp": "./build/index.js"
+    "ast-search-mcp": "build/index.js"
   },
   "exports": {
     ".": {
