@@ -1,3 +1,15 @@
+# ast-search-python [1.5.0-beta.3](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.5.0-beta.2...ast-search-python@1.5.0-beta.3) (2026-04-03)
+
+
+### Features
+
+* updated release definition & strategy ([75533c0](https://github.com/willey-shiplet/ast-search/commit/75533c01baf514bdabc060193ee34609026d1bea))
+
+
+### Dependencies
+
+* **ast-search-js:** upgraded to 1.9.0-beta.3
+
 # ast-search-python [1.5.0-beta.2](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.5.0-beta.1...ast-search-python@1.5.0-beta.2) (2026-04-03)
 
 
