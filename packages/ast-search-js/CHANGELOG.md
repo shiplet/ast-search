@@ -1,3 +1,10 @@
+# ast-search-js [1.9.0-beta.2](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.9.0-beta.1...ast-search-js@1.9.0-beta.2) (2026-04-03)
+
+
+### Bug Fixes
+
+* clean up release logs ([#18](https://github.com/willey-shiplet/ast-search/issues/18)) ([84a4282](https://github.com/willey-shiplet/ast-search/commit/84a4282f649447b64befae535859c3291df89aea))
+
 # ast-search-js [1.9.0-beta.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.8.1...ast-search-js@1.9.0-beta.1) (2026-04-03)
 
 
