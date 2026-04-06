@@ -1,6 +1,6 @@
 {
   "name": "ast-search-mcp",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "MCP server for ast-search — structural code search for AI agents",
   "type": "module",
   "bin": {
