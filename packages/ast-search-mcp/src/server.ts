@@ -54,10 +54,11 @@ type ToolResult = {
 
 export const searchSchema = z.object({
   queries: z.array(z.string()).min(1).describe(
-    "One or more AST selector queries. CSS selectors for JS/TS/Vue; S-expressions for Python.",
+    "One or more AST selector queries. CSS selectors for JS/TS/Vue; S-expressions for Python. " +
+    "Note: Babel represents dynamic import() as CallExpression[callee.type='Import'], not ImportExpression. Use show_ast to inspect unknown node shapes.",
   ),
   dir: z.string().optional().describe(
-    "Root directory to search (default: current working directory)",
+    "Root directory or single file path to search (default: current working directory)",
   ),
   lang: z.string().optional().describe(
     'Restrict search to one language backend, e.g. "js" or "python"',
@@ -296,7 +297,16 @@ export async function handleShowAst(args: z.infer<typeof showAstSchema>): Promis
       throw new Error(`Backend "${backend.langId}" does not support show_ast`);
     }
 
-    const ast = await backend.parse(source, filePath);
+    let ast: unknown;
+    try {
+      ast = await backend.parse(source, filePath);
+    } catch (parseErr) {
+      const parseMsg = parseErr instanceof Error ? parseErr.message : String(parseErr);
+      throw new Error(
+        `Failed to parse ${file ? `"${file}"` : "inline code"}: ${parseMsg}. ` +
+        `Note: the search tool silently skips files it cannot parse.`,
+      );
+    }
     const text = backend.printAst(ast, source, "text");
 
     return { content: [{ type: "text" as const, text }] };

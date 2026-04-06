@@ -94,4 +94,35 @@ describe("expandShorthands", () => {
       expect(expandShorthands(key)).toBe(PYTHON_SHORTHANDS[key]);
     }
   });
+
+  // Inner-pass expansion: shorthand after `(` → node type name only
+  test("expands non-conflicting shorthand after `(` to the bare node type name", () => {
+    // fn inside an S-expression becomes function_definition (not the full S-expression)
+    expect(expandShorthands("(fn) @f")).toBe("(function_definition) @f");
+    expect(expandShorthands("(class) @c")).toBe("(class_definition) @c");
+    expect(expandShorthands("(assign) @a")).toBe("(assignment) @a");
+    expect(expandShorthands("(return) @r")).toBe("(return_statement) @r");
+  });
+
+  test("enables writing complex queries using shorthands as node type names", () => {
+    const result = expandShorthands("(fn name: (identifier) @name)");
+    expect(result).toBe("(function_definition name: (identifier) @name)");
+  });
+
+  test("conflicting shorthands (same name as node type) are no-ops inside S-expressions", () => {
+    // `call` expands to node type `call` → identical to the original word
+    expect(expandShorthands("(call function: (identifier) @f)")).toBe(
+      "(call function: (identifier) @f)",
+    );
+    expect(expandShorthands("(await) @a")).toBe("(await) @a");
+  });
+
+  test("standalone and inner-pass expansion coexist correctly", () => {
+    // Mixed: bare shorthand + shorthand inside S-expression in one query
+    const result = expandShorthands("fn (fn name: (identifier) @name) @_");
+    // The bare `fn` at the start expands to full S-expression
+    expect(result).toContain("(function_definition) @_");
+    // The `fn` inside the S-expression expands to just the node type
+    expect(result).toContain("(function_definition name: (identifier) @name)");
+  });
 });

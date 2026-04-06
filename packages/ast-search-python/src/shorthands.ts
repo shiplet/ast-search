@@ -44,14 +44,29 @@ export const PYTHON_SHORTHANDS: Record<string, string> = {
 };
 
 export function expandShorthands(selector: string): string {
-  // Replace bare shorthand words (not inside quotes and not preceded by @ or ()
-  // with their S-expression. The negative lookbehind prevents expanding:
-  //   - capture names like @fn into @(function_definition) @_
-  //   - node type names inside S-expressions like (call ...) into ((call) @_ ...)
-  //     which matters for shorthands whose name matches the tree-sitter node type
-  //     exactly (call, await, yield, lambda, decorator).
+  // Expand shorthand words to their tree-sitter S-expression equivalents, outside
+  // quoted strings. Two expansion contexts:
+  //
+  // 1. Inside S-expressions — after `(`: expand to just the node type name so that
+  //    `(fn body: ...)` becomes `(function_definition body: ...)`. Shorthands whose
+  //    name already matches the tree-sitter node type (call, await, yield, lambda,
+  //    decorator) are no-ops here — expanding `call` → `call` is harmless.
+  //
+  // 2. Standalone — not preceded by `(` or `@`: expand to the full S-expression
+  //    so that bare `fn` becomes `(function_definition) @_`.
+  //
+  // Capture names like `@fn` are left untouched by both patterns.
   const keys = Object.keys(PYTHON_SHORTHANDS);
-  const pattern = new RegExp(`(?<![@(])\\b(${keys.join("|")})\\b`, "g");
+
+  // Map each shorthand to its bare node type name: "(function_definition) @_" → "function_definition"
+  const nodeTypes: Record<string, string> = {};
+  for (const [key, val] of Object.entries(PYTHON_SHORTHANDS)) {
+    const m = val.match(/^\((\w+)\)\s*@_$/);
+    nodeTypes[key] = m ? m[1] : key;
+  }
+
+  const innerPattern = new RegExp(`(?<=\\()\\b(${keys.join("|")})\\b`, "g");
+  const standalonePattern = new RegExp(`(?<![@(])\\b(${keys.join("|")})\\b`, "g");
 
   const parts: string[] = [];
   let i = 0;
@@ -66,7 +81,10 @@ export function expandShorthands(selector: string): string {
       const nextQuote = selector.slice(i).search(/['"]/);
       const segment =
         nextQuote === -1 ? selector.slice(i) : selector.slice(i, i + nextQuote);
-      parts.push(segment.replace(pattern, (m) => PYTHON_SHORTHANDS[m] ?? m));
+      // Inner pass first: (fn → (function_definition
+      const afterInner = segment.replace(innerPattern, (m) => nodeTypes[m] ?? m);
+      // Standalone pass: bare fn → (function_definition) @_
+      parts.push(afterInner.replace(standalonePattern, (m) => PYTHON_SHORTHANDS[m] ?? m));
       i = nextQuote === -1 ? selector.length : i + nextQuote;
     }
   }
