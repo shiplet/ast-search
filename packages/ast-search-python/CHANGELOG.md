@@ -1,3 +1,10 @@
+## ast-search-python [1.6.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.6.0...ast-search-python@1.6.1) (2026-04-06)
+
+
+### Bug Fixes
+
+* remove beta dependency on ast-search-js ([1092770](https://github.com/willey-shiplet/ast-search/commit/1092770546368b1cbc328e263140b09b1e57446e))
+
 # ast-search-python [1.6.0-beta.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-python@1.5.0...ast-search-python@1.6.0-beta.1) (2026-04-03)
 
 
