@@ -357,6 +357,25 @@ describe("handleShowAst", () => {
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toContain("Invalid lines value");
   });
+
+  it("returns a parse-specific error message when backend.parse throws on a file", async () => {
+    mockReadFile.mockResolvedValue("const x = ???" as never);
+    mockParse.mockRejectedValue(new Error("Unexpected token (1:10)"));
+    const result = await handleShowAst({ file: "/src/broken.ts" });
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain('Failed to parse "/src/broken.ts"');
+    expect(result.content[0].text).toContain("Unexpected token");
+    expect(result.content[0].text).toContain("silently skips");
+  });
+
+  it("returns a parse-specific error message when backend.parse throws on inline code", async () => {
+    mockParse.mockRejectedValue(new Error("SyntaxError: unexpected eof"));
+    const result = await handleShowAst({ code: "function (" });
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain("Failed to parse inline code");
+    expect(result.content[0].text).toContain("SyntaxError");
+    expect(result.content[0].text).toContain("silently skips");
+  });
 });
 
 // ---------------------------------------------------------------------------

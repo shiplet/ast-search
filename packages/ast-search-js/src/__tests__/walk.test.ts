@@ -21,6 +21,9 @@ jest.mock("node:fs/promises", () => ({
   readdir: jest.fn().mockImplementation((path: string, options?: unknown) => {
     return walkFsMock.promises.readdir(path, options as never);
   }),
+  stat: jest.fn().mockImplementation((path: string) => {
+    return walkFsMock.promises.stat(path);
+  }),
 }));
 
 const JS_EXTENSIONS = new Set([".js", ".ts", ".jsx", ".tsx", ".mjs", ".cjs", ".vue"]);
@@ -109,5 +112,30 @@ describe("walkRepoFiles — exclude patterns", () => {
     const all = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS));
     const filtered = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS, ["**/*.py"]));
     expect(filtered.sort()).toEqual(all.sort());
+  });
+});
+
+describe("walkRepoFiles — single file path", () => {
+  test("yields the file when dir is a file path with a matching extension", async () => {
+    const files = await collect(walkRepoFiles("/repo/src/index.ts", JS_EXTENSIONS));
+    expect(files).toEqual(["/repo/src/index.ts"]);
+  });
+
+  test("yields nothing when dir is a file with a non-matching extension", async () => {
+    const files = await collect(walkRepoFiles("/repo/src/styles/main.css", JS_EXTENSIONS));
+    expect(files).toHaveLength(0);
+  });
+
+  test("yields only the single file, not other files in the same directory", async () => {
+    const files = await collect(walkRepoFiles("/repo/src/index.ts", JS_EXTENSIONS));
+    expect(files).toHaveLength(1);
+    expect(files[0]).toBe("/repo/src/index.ts");
+  });
+
+  test("directory paths still walk recursively", async () => {
+    const files = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS));
+    expect(files.length).toBeGreaterThan(1);
+    expect(files).toContain("/repo/src/index.ts");
+    expect(files).toContain("/repo/src/components/Button.tsx");
   });
 });

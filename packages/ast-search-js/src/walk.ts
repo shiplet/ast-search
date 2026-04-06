@@ -1,4 +1,4 @@
-import { readdir } from "node:fs/promises";
+import { readdir, stat } from "node:fs/promises";
 import { extname, join, relative } from "node:path";
 import micromatch from "micromatch";
 
@@ -8,6 +8,13 @@ export async function* walkRepoFiles(
   exclude: string[] = [],
   rootDir?: string,
 ): AsyncGenerator<string> {
+  // Support single-file paths in addition to directories
+  const st = await stat(dir).catch(() => null);
+  if (st?.isFile()) {
+    if (extensions.has(extname(dir))) yield dir;
+    return;
+  }
+
   const root = rootDir ?? dir;
   const entries = await readdir(dir, { withFileTypes: true });
   for (const entry of entries) {

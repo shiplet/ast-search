@@ -42,6 +42,35 @@ describe("expandShorthands", () => {
     expect(expandShorthands("FunctionDeclaration")).toBe("FunctionDeclaration");
     expect(expandShorthands("JSXElement")).toBe("JSXElement");
   });
+
+  test("spread expands to match both SpreadElement and JSXSpreadAttribute", () => {
+    expect(expandShorthands("spread")).toBe(":matches(SpreadElement, JSXSpreadAttribute)");
+  });
+});
+
+describe("runQuery — spread shorthand", () => {
+  test("matches JSXSpreadAttribute in JSX elements", () => {
+    const source = "const C = (props) => <div {...props} />;";
+    const ast = getAst(source);
+    const matches = runQuery("spread", ast, source, "test.tsx");
+    expect(matches).toHaveLength(1);
+    expect(matches[0].source).toContain("...props");
+  });
+
+  test("still matches SpreadElement in object spread", () => {
+    const source = "const x = { ...obj, a: 1 };";
+    const ast = getAst(source);
+    const matches = runQuery("spread", ast, source, "test.ts");
+    expect(matches).toHaveLength(1);
+    expect(matches[0].source).toContain("...obj");
+  });
+
+  test("matches both SpreadElement and JSXSpreadAttribute in the same file", () => {
+    const source = "const x = { ...a }; const C = () => <div {...b} />;";
+    const ast = getAst(source);
+    const matches = runQuery("spread", ast, source, "test.tsx");
+    expect(matches).toHaveLength(2);
+  });
 });
 
 describe("runQuery — type selectors", () => {

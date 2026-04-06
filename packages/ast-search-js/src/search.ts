@@ -21,7 +21,7 @@ export const SHORTHANDS: Record<string, string> = {
   assign: "AssignmentExpression",
   binary: "BinaryExpression",
   logical: "LogicalExpression",
-  spread: "SpreadElement",
+  spread: ":matches(SpreadElement, JSXSpreadAttribute)",
   // Declaration & structure shorthands
   import: "ImportDeclaration",
   export: ":matches(ExportNamedDeclaration, ExportDefaultDeclaration, ExportAllDeclaration)",
