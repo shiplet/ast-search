@@ -1,5 +1,5 @@
 import { describe, expect, test } from "@jest/globals";
-import { fsMock, vueSFCOnlyJS, reactListNoKey } from "./setup";
+import { fsMock, vueSFCOnlyJS, reactListNoKey, vueLineColFixture } from "./setup";
 import { searchRepo, searchRepoWithMeta } from "../main.js";
 import { validateSelector } from "../search.js";
 
@@ -30,6 +30,21 @@ describe("searchRepo", () => {
     const matches = await searchRepo(["ObjectMethod ThisExpression"], "/");
     expect(matches.length).toBeGreaterThan(0);
     expect(matches.some((m) => m.file === vueSFCOnlyJS)).toBe(true);
+  });
+
+  test("vue SFC: line and column point to the original file, not the extracted script", async () => {
+    // ThisExpression inside greet() is on line 9, col 13 of the original .vue file.
+    // Before the fix, parseVueSFC dropped the pre-<script> lines, so line numbers
+    // were script-relative (off by 4) and source text was sliced from the wrong position.
+    const matches = await searchRepo(
+      ['ObjectMethod[key.name="greet"] ThisExpression'],
+      "/",
+    );
+    const m = matches.find((m) => m.file === vueLineColFixture);
+    expect(m).toBeDefined();
+    expect(m!.line).toBe(9);
+    expect(m!.col).toBe(13);
+    expect(m!.source).toBe("this");
   });
 
   test("returns empty array when nothing matches", async () => {

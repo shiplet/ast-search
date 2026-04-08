@@ -26,7 +26,9 @@ export class JSLanguageBackend implements LanguageBackend {
   }
 
   query(ast: unknown, selector: string, source: string, filePath: string, options?: { showAst?: boolean }): Match[] {
-    return runQuery(selector, ast as File, source, filePath, options?.showAst ?? false);
+    const ext = extname(filePath);
+    const querySource = ext === ".vue" ? parseVueSFC(Buffer.from(source)) : source;
+    return runQuery(selector, ast as File, querySource, filePath, options?.showAst ?? false);
   }
 
   validateSelector(selector: string): void {

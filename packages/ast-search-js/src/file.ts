@@ -21,6 +21,7 @@ export function parseVueSFC(lines: Buffer): string {
   for (const line of lines.toString().split("\n")) {
     if (SCRIPT_OPEN.test(line)) {
       append = true;
+      fileContents.push(""); // blank placeholder preserves line count
       continue;
     }
 
@@ -31,6 +32,8 @@ export function parseVueSFC(lines: Buffer): string {
 
     if (append) {
       fileContents.push(line);
+    } else {
+      fileContents.push(""); // blank placeholder preserves line count
     }
   }
 

@@ -1100,6 +1100,26 @@ const d = obj?.nested?.value;
 `;
 
 /**
+ * Minimal Vue SFC for line/column preservation tests.
+ * `this` appears on line 9, column 13 (0-indexed) of the original file.
+ */
+export const vueLineColFixture = "/vueLineCol.vue";
+export const VueLineColFixture: string = `<template>
+  <div/>
+</template>
+
+<script>
+export default {
+  methods: {
+    greet() {
+      return this.name
+    },
+  },
+}
+</script>
+`;
+
+/**
  * React list components — one with .map() missing key, one with key
  */
 export const reactListNoKey = "/reactListNoKey.tsx";
@@ -1126,5 +1146,6 @@ export const volume = Volume.fromJSON({
   [reactListNoKey]: ReactListNoKey,
   [vue3SFC]: Vue3SFC,
   [vueSFCOnlyJS]: VueSFCOnlyJS,
+  [vueLineColFixture]: VueLineColFixture,
 });
 export const fsMock = createFsFromVolume(volume);

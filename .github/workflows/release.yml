@@ -53,7 +53,7 @@ jobs:
         run: pnpm i --frozen-lockfile
 
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
-        run: pnpm audit --prod signatures
+        run: npm audit signatures
 
       - name: Build
         run: pnpm --filter ast-search-js run build && pnpm --filter ast-search-python run build && pnpm --filter ast-search-mcp run build
