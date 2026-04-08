@@ -1,3 +1,10 @@
+## ast-search-js [1.10.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.10.0...ast-search-js@1.10.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* preserve Vue SFC line:col locations ([6eb00fb](https://github.com/willey-shiplet/ast-search/commit/6eb00fbcd4d16303df6274f7c7f5648b718f8e28))
+
 # ast-search-js [1.10.0-beta.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.9.0...ast-search-js@1.10.0-beta.1) (2026-04-03)
 
 
