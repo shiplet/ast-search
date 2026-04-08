@@ -22,7 +22,7 @@ export async function* walkRepoFiles(
     if (entry.name === "node_modules") continue;
 
     const fullPath = join(dir, entry.name);
-    if (exclude.length > 0 && micromatch.isMatch(relative(root, fullPath), exclude)) continue;
+    if (exclude.length > 0 && micromatch.isMatch(relative(root, fullPath), exclude, { matchBase: true })) continue;
 
     if (entry.isDirectory()) {
       yield* walkRepoFiles(fullPath, extensions, exclude, root);

@@ -13,6 +13,7 @@ const walkVolume = Volume.fromJSON({
   "/repo/node_modules/lodash/index.js": "module.exports = {};",
   "/repo/.hidden/secret.ts": "const secret = 1;",
   "/repo/src/empty/.gitkeep": "",
+  "/repo/src/utils/helper.test.ts": "test('x', () => {})",
 });
 const walkFsMock = createFsFromVolume(walkVolume);
 
@@ -112,6 +113,13 @@ describe("walkRepoFiles — exclude patterns", () => {
     const all = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS));
     const filtered = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS, ["**/*.py"]));
     expect(filtered.sort()).toEqual(all.sort());
+  });
+
+  test("bare wildcard pattern (no slash) excludes files in subdirectories by basename", async () => {
+    const files = await collect(walkRepoFiles("/repo/src", JS_EXTENSIONS, ["*test*"]));
+    expect(files).not.toContain("/repo/src/utils/helper.test.ts");
+    expect(files).toContain("/repo/src/utils/helper.js");
+    expect(files).toContain("/repo/src/index.ts");
   });
 });
 
