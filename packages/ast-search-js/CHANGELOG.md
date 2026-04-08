@@ -1,3 +1,10 @@
+## ast-search-js [1.10.2](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.10.1...ast-search-js@1.10.2) (2026-04-08)
+
+
+### Bug Fixes
+
+* update micromatch glob matching ([dcba9fc](https://github.com/willey-shiplet/ast-search/commit/dcba9fce99d3d9d8a61e91d5899f13d64ee9feb6))
+
 ## ast-search-js [1.10.1](https://github.com/willey-shiplet/ast-search/compare/ast-search-js@1.10.0...ast-search-js@1.10.1) (2026-04-08)
 
 
