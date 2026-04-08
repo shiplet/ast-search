@@ -1,6 +1,6 @@
 {
   "name": "ast-search-python",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "Python language plugin for ast-search",
   "type": "module",
   "main": "./build/index.js",
@@ -47,6 +47,6 @@
     "typescript": "^5.4.5"
   },
   "peerDependencies": {
-    "ast-search-js": "1.10.1"
+    "ast-search-js": "1.10.2"
   }
 }
